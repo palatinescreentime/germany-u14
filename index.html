@@ -173,6 +173,37 @@ textarea.fi{min-height:78px;resize:vertical}
 .float .btn{flex:1}
 .cfg-warn{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;line-height:1.5}
 
+/* ── Bag Tags ── */
+.bt-tabs{display:flex;gap:8px;margin-bottom:14px}
+.bt-tab{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);text-align:center}
+.bt-tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+.bt-game-sel{width:100%;padding:10px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;color:var(--text);background:#fff;margin-bottom:14px;font-weight:600}
+.hw-alert{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:12px;line-height:1.6}
+.hw-alert strong{display:block;margin-bottom:2px;font-size:13px}
+.cs-banner{background:var(--gl);border:1.5px solid var(--g);color:var(--g);padding:10px 12px;border-radius:8px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cs-banner span{font-size:13px;font-weight:700}
+.tag-section{margin-bottom:18px}
+.tag-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.tag-icon{font-size:18px}
+.tag-lbl{font-size:13px;font-weight:700}
+.tag-desc{font-size:11px;color:var(--muted);margin-left:auto;text-align:right;max-width:140px;line-height:1.3}
+.tag-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tc{padding:8px 13px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--text);user-select:none;transition:all .15s}
+.tc.awarded{background:var(--g);color:#fff;border-color:var(--g)}
+.tc.done{background:#f0f0f0;color:#aaa;border-color:#ddd;cursor:default;text-decoration:line-through;opacity:.6}
+.tc.team-on{background:var(--g);color:#fff;border-color:var(--g)}
+.grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);border:1px solid var(--border)}
+.bt-grid{border-collapse:collapse;font-size:12px;width:100%;min-width:560px}
+.bt-grid th{background:var(--g);color:#fff;padding:8px 7px;text-align:center;font-size:11px;white-space:nowrap}
+.bt-grid th.pc{text-align:left;padding-left:10px;min-width:90px}
+.bt-grid td{padding:7px 7px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+.bt-grid td.pc{text-align:left;font-weight:700;padding-left:10px}
+.bt-grid tr:nth-child(even) td{background:var(--gl)}
+.bt-grid .has{color:var(--g);font-weight:700}
+.bt-grid .none{color:#ccc}
+.bt-grid .needshw td{background:#fff3cd!important}
+.bt-grid .sumrow td{background:var(--gd)!important;color:#fff;font-weight:700}
+.season-tag-pill{display:inline-block;background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin:2px}
 @media print{
   @page{size:landscape;margin:7mm}
   .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint{display:none!important}
@@ -235,6 +266,17 @@ const GAMES = [
 
 const HALF = 35;
 
+const TAGS = [
+  {id:'firstGoal',     label:'First Goal',    icon:'⚽', once:true,  team:false, desc:"Each player's first goal of the season"},
+  {id:'hatTrick',      label:'Hat Trick',     icon:'🎩', once:false, team:false, desc:'3+ goals in one game'},
+  {id:'hardestWorker', label:'Hardest Worker',icon:'💪', once:true,  team:false, desc:'Every player gets this exactly once all season'},
+  {id:'hungry',        label:'Hungry',        icon:'🦴', once:false, team:false, desc:'Relentless effort and desire'},
+  {id:'brickWall',     label:'Brick Wall',    icon:'🧱', once:false, team:false, desc:'Defensive standout'},
+  {id:'clutch',        label:'Clutch',        icon:'⚡', once:false, team:false, desc:'Performs under pressure in a tight moment'},
+  {id:'loudest',       label:'Loudest',       icon:'📢', once:false, team:false, desc:'Vocal leader on and off the ball'},
+  {id:'cleanSheet',    label:'Clean Sheet',   icon:'🧤', once:false, team:true,  desc:'Whole team awarded on a shutout'},
+];
+
 const G1_DEFAULT = {
   h1:{fwL:'Yael',fwC:'Jonathan',fwR:'Aarav',cmL:'Ryu',cmC:'Nicholas',cmR:'Thomas',
       fbL:'Anish',cbL:'Siddharth',cbR:'Jayce',fbR:'Adrian',gk:'Maxim',
@@ -249,10 +291,11 @@ const G1_DEFAULT = {
 // ── State ──────────────────────────────────────────────────────────────
 let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
-  gameData:{}, allGames:{}, selected:null, modal:null,
+  gameData:{}, allGames:{}, bagTags:{}, btView:'award', btGame:'g1',
+  selected:null, modal:null,
 };
 
-let db=null, gameRef=null;
+let db=null, gameRef=null, btRef=null;
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
 // ── Firebase ───────────────────────────────────────────────────────────
@@ -264,6 +307,10 @@ function initFB() {
     db.ref('germany-u14/games').on('value', s => {
       S.allGames = s.val() || {};
       if (S.view==='season'||S.view==='stats') render();
+    });
+    db.ref('germany-u14/bagtags').on('value', s => {
+      S.bagTags = s.val() || {};
+      if (S.view==='bagtags') render();
     });
   } catch(e) { console.error(e); }
   render();
@@ -283,6 +330,7 @@ function dbSet(path,val){ if(db) db.ref('germany-u14/games/'+path).set(val); }
 function dbUpdate(path,val){ if(db) db.ref('germany-u14/games/'+path).update(val); }
 function dbPush(path,val){ if(db) return db.ref('germany-u14/games/'+path).push(val); }
 function dbRemove(path){ if(db) db.ref('germany-u14/games/'+path).remove(); }
+function btSet(path,val){ if(db) db.ref('germany-u14/bagtags/'+path).set(val); }
 
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
@@ -291,6 +339,9 @@ window.goTo = function(view,gid,tab) {
   if(gid){ listenGame(gid); S.gameData=S.allGames[gid]||{}; }
   render(); window.scrollTo(0,0);
 };
+window.goToBagTags = function(){ S.view='bagtags'; S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
+window.setBTView = function(v){ S.btView=v; renderApp(); };
+window.setBTGame = function(id){ S.btGame=id; renderApp(); };
 window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
 window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
 window.setLiveHalf = function(h){ S.liveHalf=h; renderApp(); };
@@ -299,9 +350,10 @@ window.closeModal = function(){ S.modal=null; renderApp(); };
 function render() {
   const app=document.getElementById('app');
   app.innerHTML='';
-  if(S.view==='season') renderSeason(app);
-  else if(S.view==='game') renderGame(app);
-  else if(S.view==='stats') renderStats(app);
+  if(S.view==='season')   renderSeason(app);
+  else if(S.view==='game')     renderGame(app);
+  else if(S.view==='bagtags')  renderBagTags(app);
+  else if(S.view==='stats')    renderStats(app);
   const md=document.getElementById('modal');
   md.innerHTML='';
   if(S.modal) renderModal(md);
@@ -313,6 +365,7 @@ function renderSeason(a) {
   a.innerHTML=`
   <div class="hd no-print">
     <h1>Germany U14 · Spring 2026</h1>
+    <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:6px">🧱 Bag Tags</button>
     <button class="hd-btn" onclick="goTo('stats')">Season Stats</button>
   </div>
   <div class="content">
@@ -921,6 +974,177 @@ function renderStats(a){
           <td class="${r.a>0?'hl':''}">${r.a}</td></tr>`).join('')}
         </tbody></table>
     </div>
+  </div>`;
+}
+
+// ── Bag Tag helpers ────────────────────────────────────────────────────
+function gtAwardees(gameId,tagId){ return (S.bagTags[gameId]||{})[tagId]||[]; }
+function seasonAwardees(tagId){
+  const all=new Set();
+  Object.values(S.bagTags).forEach(g=>{ (g[tagId]||[]).forEach(p=>all.add(p)); });
+  return all;
+}
+function playerTagCount(player,tagId){
+  return Object.values(S.bagTags).reduce((n,g)=>n+((g[tagId]||[]).includes(player)?1:0),0);
+}
+
+window.toggleTag=function(gameId,tagId,player){
+  if(!S.bagTags[gameId]) S.bagTags[gameId]={};
+  const cur=[...(S.bagTags[gameId][tagId]||[])];
+  const idx=cur.indexOf(player);
+  // Guard once-per-season tags
+  const tag=TAGS.find(t=>t.id===tagId);
+  if(tag?.once && idx<0 && seasonAwardees(tagId).has(player)){
+    alert(`${player} already has ${tag.label} this season.`); return;
+  }
+  if(idx>=0) cur.splice(idx,1); else cur.push(player);
+  S.bagTags[gameId][tagId]=cur;
+  btSet(`${gameId}/${tagId}`,cur);
+  renderApp();
+};
+
+window.awardCleanSheet=function(gameId){
+  if(!S.bagTags[gameId]) S.bagTags[gameId]={};
+  const cur=S.bagTags[gameId]['cleanSheet']||[];
+  const allOn=PLAYERS.every(p=>cur.includes(p));
+  const next=allOn?[]:([...PLAYERS]);
+  S.bagTags[gameId]['cleanSheet']=next;
+  btSet(`${gameId}/cleanSheet`,next);
+  renderApp();
+};
+
+// ── Bag Tags view ──────────────────────────────────────────────────────
+function renderBagTags(a){
+  a.innerHTML=`
+  <div class="hd no-print">
+    <button class="back-btn" onclick="goTo('season')">‹</button>
+    <h1>🧱 Bag Tags</h1>
+  </div>
+  <div class="content">
+    <div class="bt-tabs">
+      <button class="bt-tab ${S.btView==='award'?'on':''}" onclick="setBTView('award')">Award Tags</button>
+      <button class="bt-tab ${S.btView==='grid'?'on':''}" onclick="setBTView('grid')">Season Grid</button>
+    </div>
+    <div id="bt-content"></div>
+  </div>`;
+  const c=document.getElementById('bt-content');
+  if(S.btView==='award') renderBTAward(c);
+  else renderBTGrid(c);
+}
+
+function renderBTAward(c){
+  const gd=S.allGames[S.btGame]||{};
+  const opp=gd.meta?.opponent||S.btGame;
+  const isShutout=gd.meta?.scoreUs!==undefined&&+gd.meta.scoreThem===0&&gd.meta.scoreThem!=='';
+  const csArr=gtAwardees(S.btGame,'cleanSheet');
+  const csAllAwarded=PLAYERS.every(p=>csArr.includes(p));
+
+  // Who still needs Hardest Worker
+  const hwHas=seasonAwardees('hardestWorker');
+  const hwNeeds=PLAYERS.filter(p=>!hwHas.has(p));
+
+  const gameOpts=GAMES.map(g=>{
+    const d=S.allGames[g.id]||{};
+    const label=d.meta?.opponent?`${g.label} — ${d.meta.opponent}`:g.label;
+    return `<option value="${g.id}" ${g.id===S.btGame?'selected':''}>${label}</option>`;
+  }).join('');
+
+  c.innerHTML=`
+    <select class="bt-game-sel" onchange="setBTGame(this.value)">${gameOpts}</select>
+    ${hwNeeds.length?`<div class="hw-alert">
+      <strong>💪 Hardest Worker — ${hwNeeds.length} player${hwNeeds.length>1?'s':''} still need this tag</strong>
+      ${hwNeeds.join(', ')}
+    </div>`:'<div style="background:var(--gl);border:1px solid var(--g);color:var(--g);padding:8px 12px;border-radius:8px;margin-bottom:14px;font-size:12px;font-weight:700">✓ All 17 players have received Hardest Worker</div>'}
+    ${isShutout&&!csAllAwarded?`<div class="cs-banner">
+      <span>🧤 This was a shutout — award Clean Sheet to whole team?</span>
+      <button class="btn btn-p btn-sm" onclick="awardCleanSheet('${S.btGame}')">Award All</button>
+    </div>`:''}
+    <div id="tag-sections"></div>`;
+
+  const ts=document.getElementById('tag-sections');
+  TAGS.forEach(tag=>{
+    const sec=document.createElement('div'); sec.className='tag-section';
+    const hdr=document.createElement('div'); hdr.className='tag-hdr';
+    hdr.innerHTML=`<span class="tag-icon">${tag.icon}</span>
+      <span class="tag-lbl">${tag.label}</span>
+      <span class="tag-desc">${tag.desc}</span>`;
+    sec.appendChild(hdr);
+
+    if(tag.team){
+      // Clean sheet — single button for whole team
+      const btn=document.createElement('button');
+      btn.className='tc'+(csAllAwarded?' team-on':'');
+      btn.textContent=csAllAwarded?'✓ Awarded to whole team':'Tap to award to whole team';
+      btn.onclick=()=>awardCleanSheet(S.btGame);
+      sec.appendChild(btn);
+    } else {
+      const chips=document.createElement('div'); chips.className='tag-chips';
+      const gameAwardees=gtAwardees(S.btGame,tag.id);
+      const seasonHas=tag.once?seasonAwardees(tag.id):null;
+
+      PLAYERS.forEach(p=>{
+        const awarded=gameAwardees.includes(p);
+        // For once tags: if awarded in ANOTHER game, show as done
+        const seasonDone=tag.once&&!awarded&&seasonHas?.has(p);
+        const btn=document.createElement('button');
+        btn.className='tc'+(awarded?' awarded':'')+(seasonDone?' done':'');
+        btn.textContent=p;
+        btn.title=seasonDone?`Already received ${tag.label} this season`:'';
+        if(!seasonDone) btn.onclick=()=>toggleTag(S.btGame,tag.id,p);
+        chips.appendChild(btn);
+      });
+      sec.appendChild(chips);
+    }
+    ts.appendChild(sec);
+  });
+}
+
+function renderBTGrid(c){
+  const hwHas=seasonAwardees('hardestWorker');
+  // Build totals
+  const totals={};
+  TAGS.forEach(t=>totals[t.id]=0);
+
+  const rows=PLAYERS.map(p=>{
+    const needsHW=!hwHas.has(p);
+    let cells='';
+    TAGS.forEach(tag=>{
+      if(tag.team){
+        const count=Object.values(S.bagTags).filter(g=>(g['cleanSheet']||[]).includes(p)).length;
+        if(count>0) totals[tag.id]+=count;
+        cells+=count?`<td class="has">${count}</td>`:`<td class="none">—</td>`;
+      } else if(tag.once){
+        const has=seasonAwardees(tag.id).has(p);
+        if(has) totals[tag.id]++;
+        cells+=has?`<td class="has">✓</td>`:`<td class="none">—</td>`;
+      } else {
+        const count=playerTagCount(p,tag.id);
+        if(count>0) totals[tag.id]+=count;
+        cells+=count?`<td class="has">${count}</td>`:`<td class="none">—</td>`;
+      }
+    });
+    return `<tr class="${needsHW?'needshw':''}"><td class="pc">${p}${needsHW?'<span style="font-size:9px;color:#856404;margin-left:4px">needs 💪</span>':''}</td>${cells}</tr>`;
+  }).join('');
+
+  const sumCells=TAGS.map(t=>`<td>${totals[t.id]||'—'}</td>`).join('');
+
+  c.innerHTML=`
+  <div class="card" style="padding:10px">
+    <div class="grid-wrap">
+      <table class="bt-grid">
+        <thead><tr>
+          <th class="pc">Player</th>
+          ${TAGS.map(t=>`<th>${t.icon}<br>${t.label.split(' ')[0]}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="sumrow"><td class="pc">Total</td>${sumCells}</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
+    ✓ = awarded once &nbsp;·&nbsp; number = times awarded &nbsp;·&nbsp; yellow row = needs Hardest Worker
   </div>`;
 }
 
