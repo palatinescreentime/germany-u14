@@ -84,6 +84,16 @@ textarea.fi{min-height:78px;resize:vertical}
 .fp-label{font-size:13px;font-weight:700;color:var(--text)}
 .fp-desc{font-size:10px;color:var(--muted)}
 .fp-btn.on .fp-label,.fp-btn.on .fp-desc{color:#fff}
+
+/* ── Player pool ── */
+.pool-wrap{background:#f7f7f7;border:1.5px solid var(--border);border-radius:8px;padding:10px 10px 8px;margin-top:8px}
+.pool-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.pool-chips{display:flex;flex-wrap:wrap;gap:6px}
+.pool-chip{padding:7px 12px;border-radius:5px;font-size:12px;font-weight:700;cursor:pointer;background:var(--g);color:#fff;border:2px solid transparent;user-select:none;transition:transform .1s}
+.pool-chip:active{transform:scale(.95)}
+.pool-chip.sel{outline:3px solid var(--g);outline-offset:2px;background:#fff;color:var(--g)}
+.pool-chip.unavail{background:#7f1d1d}
+.pool-empty{font-size:12px;color:var(--muted);font-style:italic}
 .ht{flex:1;padding:9px;background:var(--gl);border:none;border-radius:6px;font-size:13px;font-weight:700;color:var(--g);cursor:pointer}
 .ht.on{background:var(--g);color:#fff}
 
@@ -393,17 +403,6 @@ const PLAYER_DATA = [
   {name:'Daniel',    grade:'8th', foot:'R',    positions:'Midfield, Forward',           goalie:'No'},
   {name:'Thomas',    grade:'7th', foot:'R',    positions:'Midfield, Striker',           goalie:'No'},
 ];
-
-const G1_DEFAULT = {
-  h1:{fwL:'Yael',fwC:'Jonathan',fwR:'Aarav',cmL:'Ryu',cmC:'Nicholas',cmR:'Thomas',
-      fbL:'Anish',cbL:'Siddharth',cbR:'Jayce',fbR:'Adrian',gk:'Maxim',
-      bench:['Vincent','Liam','Wyatt','Johan','Brandon','Daniel'],
-      benchFor:['Adrian','Anish','Ryu','Jayce','Aarav','Jonathan']},
-  h2:{fwL:'Yael',fwC:'Jonathan',fwR:'Brandon',cmL:'Wyatt',cmC:'Daniel',cmR:'Jayce',
-      fbL:'Liam',cbL:'Siddharth',cbR:'Johan',fbR:'Vincent',gk:'Maxim',
-      bench:['Ryu','Nicholas','Thomas','Anish','Adrian','Aarav'],
-      benchFor:['Jayce','Wyatt','Daniel','Liam','Vincent','Brandon']}
-};
 
 // ── State ──────────────────────────────────────────────────────────────
 let S = {
@@ -719,10 +718,6 @@ window.clearGameData=function(){
   renderApp();
 };
 function renderLineup(c) {
-  if(S.gameId==='g1'&&!S.gameData.lineup?.h1){
-    S.gameData.lineup=G1_DEFAULT;
-    dbSet(`${S.gameId}/lineup`,G1_DEFAULT);
-  }
   const curFormation=(S.gameData.lineup||{})[S.lhalf]?.formation||DEFAULT_FORMATION;
   c.innerHTML=`
     <div class="print-btn-wrap no-print">
@@ -740,7 +735,11 @@ function renderLineup(c) {
         </button>`).join('')}
     </div>
     <div id="swap-hint" class="swap-hint ${S.selected?'active':''}">
-      ${S.selected?'Now tap another player or slot to swap':'Tap any player to select, then tap another to swap'}
+      ${S.selected?.slot==='__pool__'
+        ? `Tap a position or bench slot to place ${S.selected.poolName}`
+        : S.selected
+          ? 'Now tap another player or slot to swap'
+          : 'Tap a player to select · tap a position to place · tap player pool below to assign'}
     </div>
     <div id="pitch-wrap"></div>`;
   renderPitch(document.getElementById('pitch-wrap'));
@@ -758,9 +757,11 @@ function renderPitch(container) {
   const ln=(S.gameData.lineup||{})[S.lhalf]||{};
   const h1ln=(S.gameData.lineup||{}).h1||{};
   const h1starts=new Set(getPos("h1").map(p=>h1ln[p.id]).filter(Boolean));
+  const avail=S.gameData.availability||{};
+  const posArr=getPos(S.lhalf);
   container.innerHTML='';
 
-  // Pitch
+  // ── Pitch ──
   const pitch=document.createElement('div');
   pitch.className='pitch';
   pitch.innerHTML=`<svg viewBox="0 0 300 390" preserveAspectRatio="none">
@@ -774,16 +775,13 @@ function renderPitch(container) {
     <rect x="100" y="366" width="100" height="23" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
   </svg>`;
 
-  // Tap on pitch background to deselect
   pitch.addEventListener('click', e=>{
     if(e.target===pitch||e.target.tagName==='svg'||e.target.tagName==='line'||e.target.tagName==='circle'||e.target.tagName==='rect'){
       S.selected=null; refreshHint(); renderPitch(container);
     }
   });
 
-  const avail=S.gameData.availability||{};
-
-  getPos(S.lhalf).forEach(pos=>{
+  posArr.forEach(pos=>{
     const name=ln[pos.id]||'';
     const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot===pos.id;
     const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
@@ -797,21 +795,23 @@ function renderPitch(container) {
   });
   container.appendChild(pitch);
 
-  // Bench
+  // ── Bench — dynamic size based on roster minus 11 starters ──
+  const rosterCount=players().length;
+  const benchSize=Math.max(rosterCount-11, 0);
   const bench=document.createElement('div'); bench.className='bench';
-  bench.innerHTML='<div class="blabel">Bench — tap name to select · tap label below to set planned sub</div>';
+  bench.innerHTML='<div class="blabel">Bench — tap to select · tap label below to set planned sub</div>';
   const bs=document.createElement('div'); bs.className='bslots';
-  const bArr=ln.bench||['','','','','',''];
+  const bArr=ln.bench||[];
   const bFor=ln.benchFor||[];
 
-  bArr.forEach((name,i)=>{
+  for(let i=0;i<benchSize;i++){
+    const name=bArr[i]||'';
     const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot==='b'+i;
     const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
     const isUnavail=name&&avail[name]===false;
     const slot=document.createElement('div'); slot.className='bslot';
     const chip=makeChip(name,S.lhalf,'b'+i,false,isNew,isSel,container,isUnavail);
     slot.appendChild(chip);
-    // Sub-for label
     const sf=document.createElement('div');
     const forName=bFor[i]||'';
     sf.className='sub-for-lbl'+(forName?' set':'');
@@ -819,17 +819,61 @@ function renderPitch(container) {
     sf.onclick=(e)=>{ e.stopPropagation(); showBenchForModal(i); };
     slot.appendChild(sf);
     bs.appendChild(slot);
-  });
+  }
   bench.appendChild(bs);
   container.appendChild(bench);
+
+  // ── Player pool — roster members not yet placed anywhere ──
+  const assigned=new Set([
+    ...posArr.map(p=>ln[p.id]).filter(Boolean),
+    ...Array.from({length:benchSize},(_,i)=>bArr[i]||'').filter(Boolean)
+  ]);
+  const pool=players().filter(p=>!assigned.has(p));
+
+  const poolWrap=document.createElement('div'); poolWrap.className='pool-wrap';
+  poolWrap.innerHTML=`<div class="pool-label">Player Pool — tap to assign to a position or bench slot</div>`;
+  const poolChips=document.createElement('div'); poolChips.className='pool-chips';
+
+  if(!pool.length){
+    poolChips.innerHTML='<span class="pool-empty">All players assigned ✓</span>';
+  } else {
+    pool.forEach(p=>{
+      const isSel=S.selected?.slot==='__pool__'&&S.selected.poolName===p;
+      const isUnavail=avail[p]===false;
+      const btn=document.createElement('button');
+      btn.className='pool-chip'+(isSel?' sel':'')+(isUnavail?' unavail':'');
+      btn.textContent=isUnavail?`${p} ⚠`:p;
+      btn.onclick=(e)=>{
+        e.stopPropagation();
+        if(isSel){ S.selected=null; }
+        else { S.selected={half:S.lhalf,slot:'__pool__',poolName:p}; }
+        refreshHint();
+        renderPitch(container);
+      };
+      poolChips.appendChild(btn);
+    });
+  }
+  poolWrap.appendChild(poolChips);
+  container.appendChild(poolWrap);
 }
 
 function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer,isUnavail) {
-  const isSwapTarget=S.selected&&!(S.selected.half===half&&S.selected.slot===slot);
+  const isPoolSel=S.selected?.slot==='__pool__';
+  const isRegSwapTarget=S.selected&&S.selected.slot!=='__pool__'&&!(S.selected.half===half&&S.selected.slot===slot);
+  const isPlaceTarget=isPoolSel&&!(S.selected?.half===half&&S.selected?.slot===slot);
+
   if(!name){
     const e=document.createElement('div');
-    e.className='epslot'+(isSwapTarget?' swap-target':'');
-    e.textContent=isSwapTarget?'swap here':'—';
+    if(isPlaceTarget){
+      e.className='epslot swap-target';
+      e.textContent='place here';
+    } else if(isRegSwapTarget){
+      e.className='epslot swap-target';
+      e.textContent='swap here';
+    } else {
+      e.className='epslot';
+      e.textContent='—';
+    }
     e.onclick=()=>tapSlot(half,slot,pitchContainer);
     return e;
   }
@@ -842,14 +886,36 @@ function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer,isUnavail) {
 }
 
 function tapSlot(half,slot,container) {
-  if(!S.selected){
-    S.selected={half,slot};
+  const pw=container||document.getElementById('pitch-wrap');
+
+  // Pool player being placed into a slot
+  if(S.selected?.slot==='__pool__'){
+    const poolName=S.selected.poolName;
+    const existing=getSlotPlayer(half,slot);
+    setSlotPlayer(half,slot,poolName);
+    // If this slot had a player, they go back to pool (just cleared — pool recalcs)
+    if(existing) {
+      // Also remove existing from wherever pool player came from (already unassigned, no-op)
+    }
+    S.selected=null;
+    dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
     refreshHint();
-    renderPitch(container||document.getElementById('pitch-wrap'));
+    renderPitch(pw);
+    return;
+  }
+
+  // Normal swap logic
+  if(!S.selected){
+    // If slot is occupied, select it; if empty and no pool selection, do nothing
+    if(getSlotPlayer(half,slot)){
+      S.selected={half,slot};
+      refreshHint();
+      renderPitch(pw);
+    }
   } else if(S.selected.half===half&&S.selected.slot===slot){
     S.selected=null;
     refreshHint();
-    renderPitch(container||document.getElementById('pitch-wrap'));
+    renderPitch(pw);
   } else {
     const src=S.selected; S.selected=null;
     swapPlayers(src.half,src.slot,half,slot);
@@ -859,8 +925,16 @@ function tapSlot(half,slot,container) {
 function refreshHint(){
   const h=document.getElementById('swap-hint');
   if(!h) return;
-  h.className='swap-hint'+(S.selected?' active':'');
-  h.textContent=S.selected?'Now tap another player or slot to swap':'Tap any player to select, then tap another to swap';
+  if(S.selected?.slot==='__pool__'){
+    h.className='swap-hint active';
+    h.textContent=`Tap a position or bench slot to place ${S.selected.poolName}`;
+  } else if(S.selected){
+    h.className='swap-hint active';
+    h.textContent='Now tap another player or slot to swap';
+  } else {
+    h.className='swap-hint';
+    h.textContent='Tap a player to select · tap a position to place · tap pool below to assign';
+  }
 }
 
 function getSlotPlayer(half,slot){
