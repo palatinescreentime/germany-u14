@@ -77,7 +77,13 @@ textarea.fi{min-height:78px;resize:vertical}
 .av.out{background:#fde8e8;color:var(--red);border-color:var(--red);text-decoration:line-through}
 
 /* ── Pitch ── */
-.half-tabs{display:flex;gap:8px;margin-bottom:10px}
+.half-tabs{display:flex;gap:8px;margin-bottom:8px}
+.formation-picker{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.fp-btn{flex:1;min-width:70px;padding:7px 4px;border:1.5px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;text-align:center;display:flex;flex-direction:column;gap:2px}
+.fp-btn.on{background:var(--g);border-color:var(--g)}
+.fp-label{font-size:13px;font-weight:700;color:var(--text)}
+.fp-desc{font-size:10px;color:var(--muted)}
+.fp-btn.on .fp-label,.fp-btn.on .fp-desc{color:#fff}
 .ht{flex:1;padding:9px;background:var(--gl);border:none;border-radius:6px;font-size:13px;font-weight:700;color:var(--g);cursor:pointer}
 .ht.on{background:var(--g);color:#fff}
 
@@ -301,12 +307,47 @@ const FB_CFG = {
 // players() is now dynamic — reads from S.roster seeded from PLAYER_DATA
 function players(){ return (S.roster||PLAYER_DATA).map(p=>p.name); }
 
-const POS = [
-  {id:'fwL',tag:'LW',l:18,t:11},{id:'fwC',tag:'ST',l:50,t:8},{id:'fwR',tag:'RW',l:82,t:11},
-  {id:'cmL',tag:'CM',l:22,t:35},{id:'cmC',tag:'CM',l:50,t:32},{id:'cmR',tag:'CM',l:78,t:35},
-  {id:'fbL',tag:'LB',l:9, t:62},{id:'cbL',tag:'CB',l:34,t:59},{id:'cbR',tag:'CB',l:66,t:59},
-  {id:'fbR',tag:'RB',l:91,t:62},{id:'gk', tag:'GK',l:50,t:88},
-];
+const FORMATIONS = {
+  '4-3-3':{label:'4-3-3',desc:'Standard',pos:[
+    {id:'fwL',tag:'LW', l:18,t:11},{id:'fwC',tag:'ST', l:50,t:8}, {id:'fwR',tag:'RW', l:82,t:11},
+    {id:'cmL',tag:'CM', l:22,t:35},{id:'cmC',tag:'CM', l:50,t:32},{id:'cmR',tag:'CM', l:78,t:35},
+    {id:'fbL',tag:'LB', l:9, t:62},{id:'cbL',tag:'CB', l:34,t:59},{id:'cbR',tag:'CB', l:66,t:59},
+    {id:'fbR',tag:'RB', l:91,t:62},{id:'gk', tag:'GK', l:50,t:88},
+  ]},
+  '4-4-2':{label:'4-4-2',desc:'Two strikers',pos:[
+    {id:'fwL',tag:'ST', l:33,t:9}, {id:'fwC',tag:'ST', l:67,t:9},
+    {id:'cmL',tag:'LM', l:9, t:34},{id:'cmC',tag:'CM', l:36,t:31},{id:'cmR',tag:'CM', l:64,t:31},{id:'fwR',tag:'RM', l:91,t:34},
+    {id:'fbL',tag:'LB', l:9, t:62},{id:'cbL',tag:'CB', l:34,t:59},{id:'cbR',tag:'CB', l:66,t:59},
+    {id:'fbR',tag:'RB', l:91,t:62},{id:'gk', tag:'GK', l:50,t:88},
+  ]},
+  '4-2-3-1':{label:'4-2-3-1',desc:'Double pivot',pos:[
+    {id:'fwC',tag:'ST',  l:50,t:8},
+    {id:'fwL',tag:'LAM',l:20,t:22},{id:'cmC',tag:'CAM',l:50,t:20},{id:'fwR',tag:'RAM',l:80,t:22},
+    {id:'cmL',tag:'DM',  l:36,t:42},{id:'cmR',tag:'DM', l:64,t:42},
+    {id:'fbL',tag:'LB',  l:9, t:62},{id:'cbL',tag:'CB', l:34,t:59},{id:'cbR',tag:'CB', l:66,t:59},
+    {id:'fbR',tag:'RB',  l:91,t:62},{id:'gk', tag:'GK', l:50,t:88},
+  ]},
+  '4-5-1':{label:'4-5-1',desc:'Defensive',pos:[
+    {id:'fwC',tag:'ST', l:50,t:8},
+    {id:'fwL',tag:'LW', l:9, t:28},{id:'cmL',tag:'CM', l:30,t:25},{id:'cmC',tag:'CM', l:50,t:23},{id:'cmR',tag:'CM', l:70,t:25},{id:'fwR',tag:'RW', l:91,t:28},
+    {id:'fbL',tag:'LB', l:9, t:62},{id:'cbL',tag:'CB', l:34,t:59},{id:'cbR',tag:'CB', l:66,t:59},
+    {id:'fbR',tag:'RB', l:91,t:62},{id:'gk', tag:'GK', l:50,t:88},
+  ]},
+  '3-5-2':{label:'3-5-2',desc:'Three at back',pos:[
+    {id:'fwL',tag:'ST',  l:33,t:9}, {id:'fwR',tag:'ST',  l:67,t:9},
+    {id:'fbL',tag:'LWB',l:6, t:45},{id:'cmL',tag:'CM',  l:28,t:33},{id:'fwC',tag:'CAM',l:50,t:27},{id:'cmR',tag:'CM',  l:72,t:33},{id:'fbR',tag:'RWB',l:94,t:45},
+    {id:'cbL',tag:'CB',  l:22,t:64},{id:'cmC',tag:'CB',  l:50,t:67},{id:'cbR',tag:'CB',  l:78,t:64},
+    {id:'gk', tag:'GK',  l:50,t:88},
+  ]},
+};
+const DEFAULT_FORMATION = '4-3-3';
+function getPos(half){ // returns position array for the current or given half
+  const hk = half||S.lhalf;
+  const f = (S.gameData.lineup||{})[hk]?.formation || DEFAULT_FORMATION;
+  return (FORMATIONS[f]||FORMATIONS[DEFAULT_FORMATION]).pos;
+}
+// Legacy alias so computePT and other cross-game code always has a position list
+const POS_ALL_IDS = ['fwL','fwC','fwR','cmL','cmC','cmR','fbL','cbL','cbR','fbR','gk'];
 
 const GAMES = [
   {id:'g1',label:'Game 1',type:'regular'},
@@ -367,7 +408,7 @@ const G1_DEFAULT = {
 // ── State ──────────────────────────────────────────────────────────────
 let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
-  gameData:{}, allGames:{}, bagTags:{}, roster:null,
+  gameData:{}, allGames:{}, bagTags:{}, roster:null, teamName:'Germany U14',
   btView:'award', btGame:'g1', selected:null, modal:null,
   clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
@@ -441,6 +482,10 @@ function initFB() {
       }
       if (S.view==='roster') render();
     });
+    db.ref('germany-u14/teamName').on('value', s => {
+      S.teamName = s.val() || 'Germany U14';
+      render();
+    });
   } catch(e) { console.error(e); }
   render();
 }
@@ -463,6 +508,7 @@ function btSet(path,val){ if(db) db.ref('germany-u14/bagtags/'+path).set(val); }
 function rosterSet(id,val){ if(db) db.ref('germany-u14/roster/'+id).set(val); }
 function rosterRemove(id){ if(db) db.ref('germany-u14/roster/'+id).remove(); }
 function rosterPush(val){ if(db) db.ref('germany-u14/roster').push(val); }
+function teamNameSet(name){ if(db) db.ref('germany-u14/teamName').set(name); }
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
   S.view=view; S.gameId=gid||null; S.tab=tab||'setup';
@@ -507,7 +553,7 @@ function renderApp(){ render(); }
 function renderSeason(a) {
   a.innerHTML=`
   <div class="hd no-print">
-    <h1>Germany U14 · Spring 2026</h1>
+    <h1>${S.teamName} · Season Manager</h1>
     <button class="hd-btn" onclick="goToRoster()" style="background:rgba(255,255,255,.15);margin-right:4px">👥 Roster</button>
     <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:4px">🧱 Bag Tags</button>
     ${(()=>{
@@ -677,6 +723,7 @@ function renderLineup(c) {
     S.gameData.lineup=G1_DEFAULT;
     dbSet(`${S.gameId}/lineup`,G1_DEFAULT);
   }
+  const curFormation=(S.gameData.lineup||{})[S.lhalf]?.formation||DEFAULT_FORMATION;
   c.innerHTML=`
     <div class="print-btn-wrap no-print">
       <button class="btn btn-s btn-sm" onclick="window.print()">🖨 Print Lineup</button>
@@ -685,6 +732,13 @@ function renderLineup(c) {
       <button class="ht ${S.lhalf==='h1'?'on':''}" onclick="setLH('h1')">First Half</button>
       <button class="ht ${S.lhalf==='h2'?'on':''}" onclick="setLH('h2')">Second Half</button>
     </div>
+    <div class="formation-picker no-print">
+      ${Object.values(FORMATIONS).map(f=>`
+        <button class="fp-btn ${curFormation===f.label?'on':''}" onclick="setFormation('${f.label}')">
+          <span class="fp-label">${f.label}</span>
+          <span class="fp-desc">${f.desc}</span>
+        </button>`).join('')}
+    </div>
     <div id="swap-hint" class="swap-hint ${S.selected?'active':''}">
       ${S.selected?'Now tap another player or slot to swap':'Tap any player to select, then tap another to swap'}
     </div>
@@ -692,10 +746,18 @@ function renderLineup(c) {
   renderPitch(document.getElementById('pitch-wrap'));
 }
 
+window.setFormation=function(f){
+  if(!S.gameData.lineup) S.gameData.lineup={};
+  if(!S.gameData.lineup[S.lhalf]) S.gameData.lineup[S.lhalf]={bench:[]};
+  S.gameData.lineup[S.lhalf].formation=f;
+  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
+  renderApp();
+};
+
 function renderPitch(container) {
   const ln=(S.gameData.lineup||{})[S.lhalf]||{};
   const h1ln=(S.gameData.lineup||{}).h1||{};
-  const h1starts=new Set(POS.map(p=>h1ln[p.id]).filter(Boolean));
+  const h1starts=new Set(getPos("h1").map(p=>h1ln[p.id]).filter(Boolean));
   container.innerHTML='';
 
   // Pitch
@@ -721,7 +783,7 @@ function renderPitch(container) {
 
   const avail=S.gameData.availability||{};
 
-  POS.forEach(pos=>{
+  getPos(S.lhalf).forEach(pos=>{
     const name=ln[pos.id]||'';
     const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot===pos.id;
     const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
@@ -825,7 +887,7 @@ function swapPlayers(sh,ss,dh,ds){
 window.showBenchForModal=function(idx){
   const ln=(S.gameData.lineup||{})[S.lhalf]||{};
   const bench=ln.bench||[];
-  const onField=POS.map(p=>ln[p.id]).filter(Boolean);
+  const onField=getPos(S.lhalf).map(p=>ln[p.id]).filter(Boolean);
   S.modal={type:'benchFor',benchIdx:idx,benchName:bench[idx]||'Player',onField,selected:ln.benchFor?.[idx]||null};
   renderApp();
 };
@@ -905,8 +967,27 @@ function renderLive(c){
   renderLivePitch(document.getElementById('live-pitch-wrap'), ln, avail, onField, benchPlayers, h);
 }
 
+// Build live position map from lineup + sub events
+function buildCurrentPositions(ln, half){
+  const hk=`h${half}`;
+  const posArr=getPos(hk);
+  const posMap={}, playerSlot={};
+  posArr.forEach(pos=>{ if(ln[pos.id]){ posMap[pos.id]=ln[pos.id]; playerSlot[ln[pos.id]]=pos.id; } });
+  const startMin=half===1?0:HALF, endMin=half===1?HALF:HALF*2;
+  sortedEvents()
+    .filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin)
+    .forEach(e=>{
+      const slot=e.positionSlot||playerSlot[e.playerOff]||null;
+      if(e.playerOff){ delete playerSlot[e.playerOff]; if(slot) delete posMap[slot]; }
+      if(e.playerOn&&slot){ posMap[slot]=e.playerOn; playerSlot[e.playerOn]=slot; }
+    });
+  return {posMap,playerSlot};
+}
+
 function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
-  const onFieldSet=new Set(onField);
+  const hk=`h${half}`;
+  const posArr=getPos(hk);
+  const {posMap,playerSlot}=buildCurrentPositions(ln,half);
   container.innerHTML='';
 
   const pitch=document.createElement('div');
@@ -922,46 +1003,44 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     <rect x="100" y="336" width="100" height="22" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
   </svg>`;
 
-  POS.forEach(pos=>{
-    // Find who is actually at this position after subs
-    // We map original position to show current player there
-    const originalName=ln[pos.id]||'';
-    // Find if this original player is still on field; if not, slot is vacated
-    const name=onFieldSet.has(originalName)?originalName:'';
-    if(!name) return; // don't show empty slots on live view
-
+  posArr.forEach(pos=>{
+    const name=posMap[pos.id]||'';
+    if(!name) return;
     const isUnavail=avail[name]===false;
     const wrap=document.createElement('div');
     wrap.className='lchip';
     wrap.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
     wrap.innerHTML=`<div class="lchip-tag">${pos.tag}</div>
       <div class="lchip-name ${isUnavail?'unavail':''}">${name}${isUnavail?' ⚠':''}</div>`;
-    wrap.onclick=()=>{ S.modal={type:'sub',playerOff:name,playerOn:null,minute:clockMinute()}; renderApp(); };
+    wrap.onclick=()=>{
+      S.modal={type:'sub',playerOff:name,playerOn:null,positionSlot:pos.id,
+               minute:clockMinute(),clockSecs:clockElapsed()};
+      renderApp();
+    };
     pitch.appendChild(wrap);
   });
 
-  // Subs who came on — show at bottom if not in original position
+  // Fallback: players on field with no slot assignment (edge case)
   onField.forEach(p=>{
-    const inOrigPos=POS.some(pos=>ln[pos.id]===p);
-    if(inOrigPos) return;
-    // sub-on player — place in a generic area at top
+    if(playerSlot[p]) return;
     const isUnavail=avail[p]===false;
     const wrap=document.createElement('div');
-    wrap.className='lchip';
-    wrap.style.cssText=`left:50%;top:18%`;
-    wrap.innerHTML=`<div class="lchip-tag">SUB</div>
+    wrap.className='lchip'; wrap.style.cssText=`left:50%;top:20%`;
+    wrap.innerHTML=`<div class="lchip-tag">?</div>
       <div class="lchip-name sub-hint ${isUnavail?'unavail':''}">${p}</div>`;
-    wrap.onclick=()=>{ S.modal={type:'sub',playerOff:p,playerOn:null,minute:clockMinute()}; renderApp(); };
+    wrap.onclick=()=>{
+      S.modal={type:'sub',playerOff:p,playerOn:null,positionSlot:null,
+               minute:clockMinute(),clockSecs:clockElapsed()};
+      renderApp();
+    };
     pitch.appendChild(wrap);
   });
 
   container.appendChild(pitch);
 
-  // Bench
   const bench=document.createElement('div'); bench.className='live-bench-row';
   bench.innerHTML=`<div class="blabel" style="color:rgba(255,255,255,.6)">Bench — tap to bring on</div><div class="live-bench-chips" id="live-bench-chips"></div>`;
   container.appendChild(bench);
-
   const bc=bench.querySelector('#live-bench-chips');
   if(!benchPlayers.length){ bc.innerHTML='<span style="color:rgba(255,255,255,.5);font-size:12px">No bench players available</span>'; }
   benchPlayers.forEach(p=>{
@@ -969,15 +1048,22 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     const btn=document.createElement('button');
     btn.className='lb-chip'+(isUnavail?' unavail':'');
     btn.textContent=isUnavail?`${p} ⚠`:p;
-    btn.onclick=()=>{ S.modal={type:'sub',playerOff:null,playerOn:p,minute:clockMinute()}; renderApp(); };
+    btn.onclick=()=>{
+      S.modal={type:'sub',playerOff:null,playerOn:p,positionSlot:null,
+               minute:clockMinute(),clockSecs:clockElapsed()};
+      renderApp();
+    };
     bc.appendChild(btn);
   });
 }
 
 function renderFinalScoreCard(){
   const m=S.gameData.meta||{};
-  const hasScore=m.scoreUs!==undefined&&m.scoreUs!=='';
   const opp=m.opponent||'Opponent';
+  const team=S.teamName||'Germany U14';
+  const goalsScored=sortedEvents().filter(e=>e.type==='goal').length;
+  const hasScore=m.scoreUs!==undefined&&m.scoreUs!=='';
+
   if(hasScore){
     return `<div class="score-card">
       <div class="final-badge">Final Score</div>
@@ -986,22 +1072,41 @@ function renderFinalScoreCard(){
         <span class="score-vs">–</span>
         <span class="score-num">${m.scoreThem}</span>
       </div>
-      <div class="score-teams"><span>Germany</span><span>${opp}</span></div>
+      <div class="score-teams"><span>${team}</span><span>${opp}</span></div>
       <button class="btn btn-s btn-sm" style="margin-top:12px;width:100%" onclick="clearFinalScore()">Edit Score</button>
     </div>`;
   }
+
+  // Live score card — shown during game before final is submitted
+  const liveUs=m.scoreUs!==undefined&&m.scoreUs!==''?+m.scoreUs:goalsScored;
+  const liveThem=m.scoreThem!==undefined&&m.scoreThem!==''?+m.scoreThem:0;
+
   return `<div class="score-card">
-    <div class="card-title" style="margin-bottom:8px">Final Score — unlocks Report tab</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0">Score</div>
+      <span style="font-size:11px;color:var(--muted)">Goals logged auto-fill ${team} · edit freely</span>
+    </div>
     <div class="score-row">
-      <div class="score-team">Germany</div>
-      <input class="score-in" id="score-us" type="number" min="0" max="20" placeholder="0">
+      <div class="score-team">${team}</div>
+      <input class="score-in" id="score-us" type="number" min="0" max="20" value="${liveUs}" oninput="liveScoreChange()">
       <div class="score-sep">–</div>
-      <input class="score-in" id="score-them" type="number" min="0" max="20" placeholder="0">
+      <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
       <div class="score-team" style="text-align:right">${opp}</div>
     </div>
+    ${goalsScored>liveUs?`<div style="font-size:11px;color:#d97706;margin-bottom:8px">⚠ ${goalsScored} goal${goalsScored>1?'s':''} logged — own goal or scorer untracked?</div>`:''}
     <button class="btn btn-p" style="width:100%" onclick="saveFinalScore()">Submit Final Score &amp; Unlock Report</button>
   </div>`;
 }
+
+window.liveScoreChange=function(){
+  const us=document.getElementById('score-us')?.value;
+  const them=document.getElementById('score-them')?.value;
+  if(us===''||us===null) return;
+  // Save interim score so it persists across renders
+  const upd={scoreUs:+us,scoreThem:+(them||0)};
+  S.gameData.meta={...(S.gameData.meta||{}),...upd};
+  dbUpdate(`${S.gameId}/meta`,upd);
+};
 
 window.saveFinalScore=function(){
   const us=document.getElementById('score-us')?.value;
@@ -1024,7 +1129,7 @@ window.clearFinalScore=function(){
 function currentOnField(half){
   const hk=`h${half}`;
   const ln=(S.gameData.lineup||{})[hk]||{};
-  const onF=new Set(POS.map(p=>ln[p.id]).filter(Boolean));
+  const onF=new Set(getPos(hk).map(p=>ln[p.id]).filter(Boolean));
   const startMin=half===1?0:HALF, endMin=half===1?HALF:HALF*2;
   sortedEvents()
     .filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin)
@@ -1052,8 +1157,8 @@ function evHtml(e){
 }
 
 window.delEvent=function(id){ if(confirm('Delete?')) dbRemove(`${S.gameId}/events/${id}`); };
-window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,minute:clockMinute()}; renderApp(); };
-window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,scorer:null,assistedBy:null,minute:clockMinute(),text:''}; renderApp(); };
+window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,positionSlot:null,minute:clockMinute(),clockSecs:clockElapsed()}; renderApp(); };
+window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,positionSlot:null,scorer:null,assistedBy:null,minute:clockMinute(),clockSecs:clockElapsed(),text:''}; renderApp(); };
 window.selectP=function(field,name){ S.modal[field]=name===S.modal[field]?null:name; renderModal(document.getElementById('modal')); };
 window.setModalMin=function(v){ S.modal.minute=v; };
 window.setModalText=function(v){ S.modal.text=v; };
@@ -1081,26 +1186,66 @@ function pGrid(field,list){
 
 function buildSubModal(box){
   const h=S.liveHalf;
-  const onF=currentOnField(h);
   const hk=`h${h}`;
+  const onF=currentOnField(h);
   const avail=S.gameData.availability||{};
   const allBench=players().filter(p=>!onF.includes(p)&&avail[p]!==false);
+  const posArr=getPos(hk);
   const m=S.modal;
+
+  // Infer position slot from player who was tapped off
+  if(m.playerOff&&!m.positionSlot){
+    const {playerSlot}=buildCurrentPositions((S.gameData.lineup||{})[hk]||{},h);
+    m.positionSlot=playerSlot[m.playerOff]||null;
+  }
+
+  const clockStr=(()=>{
+    const secs=m.clockSecs||0;
+    return `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
+  })();
+
   const ok=m.playerOff&&m.playerOn;
-  box.innerHTML=`<div class="mt">Substitution<button class="mc" onclick="closeModal()">×</button></div>
-    <div class="modal-section">Who comes OFF?</div>${pGrid('playerOff',onF)}
-    <div class="modal-section">Who comes ON?</div>${pGrid('playerOn',allBench)}
-    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
-      <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
-      <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
-       value="${m.minute}" oninput="setModalMin(this.value)">
-      <span style="font-size:11px;color:var(--muted)">Auto-filled from clock — edit if needed</span>
+
+  box.innerHTML=`
+    <div class="mt">Substitution<button class="mc" onclick="closeModal()">×</button></div>
+
+    <div style="background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Clock time</div>
+        <div style="font-size:24px;font-weight:700;color:var(--g);font-variant-numeric:tabular-nums">${clockStr}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Min (editable)</div>
+        <input class="fi" type="number" min="0" max="70" style="width:70px;padding:5px 8px;font-size:16px;font-weight:700;text-align:center"
+         value="${m.minute}" oninput="setModalMin(this.value)">
+      </div>
     </div>
+
+    <div class="modal-section">Who comes OFF?</div>
+    ${pGrid('playerOff',onF)}
+
+    <div class="modal-section">Who comes ON?</div>
+    ${pGrid('playerOn',allBench)}
+
+    <div class="modal-section">Playing position <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(slot the sub fills)</span></div>
+    <div class="psg" style="grid-template-columns:repeat(4,1fr)">
+      ${posArr.map(pos=>`
+        <button class="psb ${m.positionSlot===pos.id?'sel':''}" onclick="S.modal.positionSlot='${pos.id}';renderModal(document.getElementById('modal'))">
+          <div style="font-size:13px;font-weight:700">${pos.tag}</div>
+        </button>`).join('')}
+    </div>
+
     <button class="conf" ${ok?'':'disabled'} onclick="confirmSub()">Confirm Sub</button>`;
 }
+
 window.confirmSub=function(){
   const m=S.modal; if(!m.playerOff||!m.playerOn) return;
-  dbPush(`${S.gameId}/events`,{type:'sub',minute:+m.minute||0,half:S.liveHalf,playerOff:m.playerOff,playerOn:m.playerOn,timestamp:Date.now()});
+  dbPush(`${S.gameId}/events`,{
+    type:'sub', minute:+m.minute||0, half:S.liveHalf,
+    playerOff:m.playerOff, playerOn:m.playerOn,
+    positionSlot:m.positionSlot||null,
+    clockSecs:m.clockSecs||0, timestamp:Date.now()
+  });
   closeModal();
 };
 
@@ -1123,6 +1268,15 @@ function buildGoalModal(box){
 window.confirmGoal=function(){
   const m=S.modal; if(!m.scorer) return;
   dbPush(`${S.gameId}/events`,{type:'goal',minute:+m.minute||0,half:S.liveHalf,scorer:m.scorer,assistedBy:m.assistedBy||null,timestamp:Date.now()});
+  // Auto-increment our score
+  const cur=S.gameData.meta||{};
+  const newScore=(+(cur.scoreUs)||0)+1;
+  const upd={scoreUs:newScore};
+  if(cur.scoreUs===undefined||cur.scoreUs==='') upd.scoreThem=cur.scoreThem||0;
+  // Also auto-set status to live if not already complete
+  if(cur.status!=='complete') upd.status='live';
+  S.gameData.meta={...cur,...upd};
+  dbUpdate(`${S.gameId}/meta`,upd);
   closeModal();
 };
 
@@ -1163,7 +1317,7 @@ function renderReport(c){
       <span class="score-vs">–</span>
       <span class="score-num">${m.scoreThem}</span>
     </div>
-    <div class="score-teams"><span>Germany</span><span>${opp}</span></div>
+    <div class="score-teams"><span>${S.teamName}</span><span>${opp}</span></div>
   </div>
   <div class="card">
     <div class="card-title">Playing Time</div>
@@ -1207,7 +1361,7 @@ function computePT(gd){
   ['h1','h2'].forEach(hk=>{
     const startMin=hk==='h1'?0:HALF, endMin=hk==='h1'?HALF:HALF*2;
     const hln=ln[hk]||{}, onF={};
-    POS.forEach(pos=>{ if(hln[pos.id]) onF[hln[pos.id]]=startMin; });
+    getPos(hk).forEach(pos=>{ if(hln[pos.id]) onF[hln[pos.id]]=startMin; });
     events.filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin).forEach(e=>{
       if(e.playerOff&&onF[e.playerOff]!==undefined){pt[e.playerOff]+=(e.minute-onF[e.playerOff]); delete onF[e.playerOff];}
       if(e.playerOn) onF[e.playerOn]=e.minute;
@@ -1279,6 +1433,16 @@ function renderRoster(a){
     <h1>👥 Player Roster</h1>
   </div>
   <div class="content">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">Team Name</div>
+        <button class="btn btn-p btn-sm" onclick="saveTeamName()">Save</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="fi" id="inp-team-name" placeholder="e.g. Germany U14" value="${S.teamName||'Germany U14'}" style="flex:1">
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">Used throughout the app — update when reusing for a new season or team.</div>
+    </div>
     <div class="add-player-row">
       <button class="btn btn-p btn-sm" onclick="openRosterEdit(null)">+ Add Player</button>
     </div>
@@ -1298,6 +1462,16 @@ function renderRoster(a){
     </div>
   </div>`;
 }
+
+window.saveTeamName=function(){
+  const name=(document.getElementById('inp-team-name')?.value||'').trim();
+  if(!name){ alert('Please enter a team name.'); return; }
+  S.teamName=name;
+  teamNameSet(name);
+  // Flash confirmation
+  const btn=document.querySelector('#inp-team-name + button, .card button.btn-p');
+  renderApp();
+};
 
 window.openRosterEdit=function(id){
   const p = id ? (S.roster||[]).find(r=>r.id===id) : null;
