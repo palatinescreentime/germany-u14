@@ -173,6 +173,20 @@ textarea.fi{min-height:78px;resize:vertical}
 .float .btn{flex:1}
 .cfg-warn{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;line-height:1.5}
 
+/* ── Positions page ── */
+.pos-table{width:100%;border-collapse:collapse;font-size:13px}
+.pos-table th{background:var(--g);color:#fff;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:.4px;white-space:nowrap}
+.pos-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.pos-table tr:nth-child(even) td{background:var(--gl)}
+.foot-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:#e8f0fe;color:#1a56db}
+.foot-badge.both{background:#fef3c7;color:#92400e}
+.gk-yes{color:var(--g);font-weight:700}
+.gk-open{color:#d97706;font-weight:700}
+.gk-no{color:#ccc}
+.pos-primary{font-weight:700;color:var(--text)}
+.pos-rest{color:var(--muted);font-size:12px}
+.grade-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;background:#f0f0f0;color:#555;margin-left:4px}
+
 /* ── Bag Tags ── */
 .bt-tabs{display:flex;gap:8px;margin-bottom:14px}
 .bt-tab{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);text-align:center}
@@ -277,6 +291,26 @@ const TAGS = [
   {id:'cleanSheet',    label:'Clean Sheet',   icon:'🧤', once:false, team:true,  desc:'Whole team awarded on a shutout'},
 ];
 
+const PLAYER_DATA = [
+  {name:'Jonathan',  grade:'8th', foot:'R',    positions:'Forward, Midfield',           goalie:'Open'},
+  {name:'Nicholas',  grade:'6th', foot:'R',    positions:'Midfield, Wing, Center Back', goalie:'No'},
+  {name:'Vincent',   grade:'6th', foot:'Both', positions:'Defense, Midfield, Striker',  goalie:'No'},
+  {name:'Anish',     grade:'6th', foot:'R',    positions:'Defense',                     goalie:'No'},
+  {name:'Adrian',    grade:'6th', foot:'R',    positions:'Defense',                     goalie:'No'},
+  {name:'Yael',      grade:'8th', foot:'R',    positions:'Forward, Midfield',           goalie:'No'},
+  {name:'Jayce',     grade:'7th', foot:'R',    positions:'Midfield, Defense',           goalie:'No'},
+  {name:'Brandon',   grade:'6th', foot:'R',    positions:'Forward',                     goalie:'Yes'},
+  {name:'Wyatt',     grade:'6th', foot:'R',    positions:'Midfield, Defense',           goalie:'No'},
+  {name:'Liam',      grade:'6th', foot:'R',    positions:'Fullback, Wing, Striker',     goalie:'No'},
+  {name:'Maxim',     grade:'8th', foot:'R',    positions:'Goalie, Wing',                goalie:'Yes'},
+  {name:'Siddharth', grade:'7th', foot:'R',    positions:'Center Back, Midfield',       goalie:'No'},
+  {name:'Aarav',     grade:'6th', foot:'R',    positions:'Forward, Midfield',           goalie:'No'},
+  {name:'Johan',     grade:'8th', foot:'R',    positions:'Midfield, Forward',           goalie:'No'},
+  {name:'Ryu',       grade:'7th', foot:'R',    positions:'Midfield, Defense',           goalie:'No'},
+  {name:'Daniel',    grade:'8th', foot:'R',    positions:'Midfield, Forward',           goalie:'No'},
+  {name:'Thomas',    grade:'7th', foot:'R',    positions:'Midfield, Striker',           goalie:'No'},
+];
+
 const G1_DEFAULT = {
   h1:{fwL:'Yael',fwC:'Jonathan',fwR:'Aarav',cmL:'Ryu',cmC:'Nicholas',cmR:'Thomas',
       fbL:'Anish',cbL:'Siddharth',cbR:'Jayce',fbR:'Adrian',gk:'Maxim',
@@ -350,8 +384,9 @@ window.closeModal = function(){ S.modal=null; renderApp(); };
 function render() {
   const app=document.getElementById('app');
   app.innerHTML='';
-  if(S.view==='season')   renderSeason(app);
+  if(S.view==='season')       renderSeason(app);
   else if(S.view==='game')     renderGame(app);
+  else if(S.view==='positions') renderPositions(app);
   else if(S.view==='bagtags')  renderBagTags(app);
   else if(S.view==='stats')    renderStats(app);
   const md=document.getElementById('modal');
@@ -365,8 +400,14 @@ function renderSeason(a) {
   a.innerHTML=`
   <div class="hd no-print">
     <h1>Germany U14 · Spring 2026</h1>
-    <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:6px">🧱 Bag Tags</button>
-    <button class="hd-btn" onclick="goTo('stats')">Season Stats</button>
+    <button class="hd-btn" onclick="goTo('positions')" style="background:rgba(255,255,255,.15);margin-right:4px">👟 Positions</button>
+    <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:4px">🧱 Bag Tags</button>
+    ${(()=>{
+      const anyDone=Object.values(S.allGames).some(g=>g?.meta?.status==='complete');
+      return anyDone
+        ? `<button class="hd-btn" onclick="goTo('stats')">📊 Stats</button>`
+        : `<button class="hd-btn" style="opacity:.4;cursor:not-allowed" title="Available after first game">📊 Stats 🔒</button>`;
+    })()}
   </div>
   <div class="content">
     ${!FB_OK?`<div class="cfg-warn"><strong>⚠ Firebase not configured</strong>
@@ -583,7 +624,7 @@ function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer) {
     return e;
   }
   const c=document.createElement('div');
-  c.className='chip'+(isGK?' gk':'')+(isNew?' new':'')+(isSel?' sel':'');
+  c.className='chip'+(isNew?' new':'')+(isSel?' sel':'');
   c.textContent=name;
   c.onclick=(e)=>{ e.stopPropagation(); tapSlot(half,slot,pitchContainer); };
   return c;
@@ -689,7 +730,7 @@ function renderLive(c){
     <div class="card-title">On Field</div>
     <div class="on-field">
       ${onField.map(p=>`
-        <div class="of ${p==='Maxim'?'gk':''}">
+        <div class="of">
           ${p}<button class="off-btn" onclick="quickSub('${p}')" title="Sub off">×</button>
         </div>`).join('')||'<span style="color:var(--muted);font-size:13px">Set lineup first</span>'}
     </div>
@@ -973,6 +1014,47 @@ function renderStats(a){
           <td class="${r.g>0?'hl':''}">${r.g}</td>
           <td class="${r.a>0?'hl':''}">${r.a}</td></tr>`).join('')}
         </tbody></table>
+    </div>
+  </div>`;
+}
+
+// ── Positions view ─────────────────────────────────────────────────────
+function renderPositions(a){
+  const rows = PLAYER_DATA.map(p => {
+    const posParts = p.positions.split(', ');
+    const primary = posParts[0];
+    const rest = posParts.slice(1).join(', ');
+    const footClass = p.foot==='Both'?'both':'';
+    const gkClass = p.goalie==='Yes'?'gk-yes':p.goalie==='Open'?'gk-open':'gk-no';
+    const gkLabel = p.goalie==='Yes'?'Yes ✓':p.goalie==='Open'?'Open':'No';
+    return `<tr>
+      <td><strong>${p.name}</strong><span class="grade-badge">${p.grade}</span></td>
+      <td><span class="foot-badge ${footClass}">${p.foot}</span></td>
+      <td><span class="pos-primary">${primary}</span>${rest?`<br><span class="pos-rest">${rest}</span>`:''}</td>
+      <td class="${gkClass}">${gkLabel}</td>
+    </tr>`;
+  }).join('');
+
+  a.innerHTML=`
+  <div class="hd no-print">
+    <button class="back-btn" onclick="goTo('season')">‹</button>
+    <h1>👟 Player Positions</h1>
+  </div>
+  <div class="content">
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="pos-table">
+        <thead><tr>
+          <th>Player</th>
+          <th>Foot</th>
+          <th>Position Preference <span style="font-weight:400;opacity:.7">(in order)</span></th>
+          <th>Goalie?</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">
+      Position order reflects player preference from pre-season assessment.
+      <span style="background:#fef3c7;color:#92400e;font-weight:700;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px">Both</span> = two-footed
     </div>
   </div>`;
 }
