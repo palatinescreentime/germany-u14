@@ -173,11 +173,45 @@ textarea.fi{min-height:78px;resize:vertical}
 .float .btn{flex:1}
 .cfg-warn{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;line-height:1.5}
 
-/* ── Positions page ── */
+.chip.unavail{background:#7f1d1d;border-color:#fca5a5;border-width:2px}
+.chip.unavail.sel{outline-color:#fca5a5}
+.of-unavail{background:#7f1d1d!important;border:2px solid #fca5a5}
+
+/* ── Live clock ── */
+.clock-bar{display:flex;align-items:center;gap:10px;background:var(--gd);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.clock-half-sw{display:flex;gap:6px}
+.clock-hs{flex:1;padding:8px 6px;border:1.5px solid rgba(255,255,255,.25);border-radius:6px;background:transparent;font-size:12px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.6);text-align:center}
+.clock-hs.on{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.5)}
+.clock-display{flex:1;text-align:center}
+.clock-time{font-size:30px;font-weight:700;color:#fff;letter-spacing:2px;font-variant-numeric:tabular-nums;line-height:1}
+.clock-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.5px}
+.clock-btn{width:52px;height:52px;border-radius:50%;border:none;font-size:22px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.clock-btn.start{background:#27ae60;color:#fff}
+.clock-btn.pause{background:#e67e22;color:#fff}
+.clock-btn.reset{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:16px;width:36px;height:36px;border-radius:50%;margin-left:-4px}
+
+/* ── Live pitch ── */
+.live-pitch{background:#2d7a3a;border-radius:8px 8px 0 0;position:relative;height:360px;border:2px solid #1a5c28;overflow:hidden}
+.live-pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.lchip{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.lchip-tag{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px}
+.lchip-name{background:var(--red);color:#fff;padding:5px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:52px;transition:transform .1s}
+.lchip-name.unavail{background:#7f1d1d;border-color:#fca5a5}
+.lchip:active .lchip-name{transform:scale(1.08)}
+.lchip-name.sub-hint{border-color:#ffd700;animation:subpulse 1.2s infinite}
+@keyframes subpulse{0%,100%{border-color:#ffd700}50%{border-color:rgba(255,215,0,.3)}}
+.live-bench-row{background:#145525;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a5c28;border-top:none;margin-bottom:12px}
+.live-bench-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.lb-chip{background:#1a6b2f;color:#fff;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;white-space:nowrap}
+.lb-chip.unavail{background:#7f1d1d;border-color:#fca5a5}
+.lb-chip:active{transform:scale(.96)}
+
+/* ── Positions / Roster page ── */
 .pos-table{width:100%;border-collapse:collapse;font-size:13px}
 .pos-table th{background:var(--g);color:#fff;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:.4px;white-space:nowrap}
-.pos-table td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.pos-table td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
 .pos-table tr:nth-child(even) td{background:var(--gl)}
+.pos-table tr:hover td{background:#e0f0e6;cursor:pointer}
 .foot-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:#e8f0fe;color:#1a56db}
 .foot-badge.both{background:#fef3c7;color:#92400e}
 .gk-yes{color:var(--g);font-weight:700}
@@ -186,6 +220,17 @@ textarea.fi{min-height:78px;resize:vertical}
 .pos-primary{font-weight:700;color:var(--text)}
 .pos-rest{color:var(--muted);font-size:12px}
 .grade-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;background:#f0f0f0;color:#555;margin-left:4px}
+.edit-ico{color:#aaa;font-size:14px;float:right}
+.del-btn{background:none;border:none;color:#fca5a5;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;float:right;margin-left:4px}
+.del-btn:hover{color:var(--red);background:#fef2f2}
+.add-player-row{display:flex;justify-content:flex-end;margin-bottom:10px}
+/* roster modal form */
+.rm-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.rm-full{margin-bottom:10px}
+.rm-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;display:block}
+.rm-seg{display:flex;gap:6px}
+.rm-seg button{flex:1;padding:9px 4px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.rm-seg button.on{background:var(--g);color:#fff;border-color:var(--g)}
 
 /* ── Bag Tags ── */
 .bt-tabs{display:flex;gap:8px;margin-bottom:14px}
@@ -253,11 +298,8 @@ const FB_CFG = {
 };
 // ══════════════════════════════════════════════════════════════════════
 
-const PLAYERS = [
-  'Jonathan','Nicholas','Vincent','Anish','Adrian',
-  'Yael','Jayce','Brandon','Wyatt','Liam',
-  'Maxim','Siddharth','Aarav','Johan','Ryu','Daniel','Thomas'
-];
+// players() is now dynamic — reads from S.roster seeded from PLAYER_DATA
+function players(){ return (S.roster||PLAYER_DATA).map(p=>p.name); }
 
 const POS = [
   {id:'fwL',tag:'LW',l:18,t:11},{id:'fwC',tag:'ST',l:50,t:8},{id:'fwR',tag:'RW',l:82,t:11},
@@ -325,11 +367,51 @@ const G1_DEFAULT = {
 // ── State ──────────────────────────────────────────────────────────────
 let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
-  gameData:{}, allGames:{}, bagTags:{}, btView:'award', btGame:'g1',
-  selected:null, modal:null,
+  gameData:{}, allGames:{}, bagTags:{}, roster:null,
+  btView:'award', btGame:'g1', selected:null, modal:null,
+  clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
 
-let db=null, gameRef=null, btRef=null;
+let db=null, gameRef=null, btRef=null, clockInterval=null;
+
+function clockElapsed(){ // total seconds for current half
+  const h=S.liveHalf-1;
+  if(S.clock.running && S.clock.startedAt!==null){
+    return S.clock.elapsed[h] + Math.floor((Date.now()-S.clock.startedAt)/1000);
+  }
+  return S.clock.elapsed[h];
+}
+function clockMinute(){ return Math.floor(clockElapsed()/60); }
+function clockDisplay(){
+  const s=clockElapsed();
+  const m=Math.floor(s/60), sec=s%60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+window.toggleClock=function(){
+  const h=S.liveHalf-1;
+  if(S.clock.running){
+    S.clock.elapsed[h]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
+    S.clock.startedAt=null; S.clock.running=false;
+    clearInterval(clockInterval); clockInterval=null;
+  } else {
+    S.clock.startedAt=Date.now(); S.clock.running=true;
+    clockInterval=setInterval(tickClock,1000);
+  }
+  tickClock();
+};
+window.resetClock=function(){
+  if(!confirm('Reset clock for this half?')) return;
+  const h=S.liveHalf-1;
+  S.clock.elapsed[h]=0; S.clock.startedAt=null; S.clock.running=false;
+  clearInterval(clockInterval); clockInterval=null;
+  tickClock();
+};
+function tickClock(){
+  const disp=document.getElementById('clock-disp');
+  const btn=document.getElementById('clock-btn');
+  if(disp) disp.textContent=clockDisplay();
+  if(btn){ btn.className='clock-btn '+(S.clock.running?'pause':'start'); btn.textContent=S.clock.running?'⏸':'▶'; }
+}
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
 // ── Firebase ───────────────────────────────────────────────────────────
@@ -345,6 +427,19 @@ function initFB() {
     db.ref('germany-u14/bagtags').on('value', s => {
       S.bagTags = s.val() || {};
       if (S.view==='bagtags') render();
+    });
+    db.ref('germany-u14/roster').on('value', s => {
+      const val = s.val();
+      if (val) {
+        // Firebase stores as object keyed by push id — convert to sorted array
+        S.roster = Object.entries(val).map(([id,p])=>({id,...p}))
+          .sort((a,b)=>a.name.localeCompare(b.name));
+      } else {
+        // Seed from PLAYER_DATA on first load
+        S.roster = PLAYER_DATA.map(p=>({...p}));
+        PLAYER_DATA.forEach(p => db.ref('germany-u14/roster').push(p));
+      }
+      if (S.view==='roster') render();
     });
   } catch(e) { console.error(e); }
   render();
@@ -365,7 +460,9 @@ function dbUpdate(path,val){ if(db) db.ref('germany-u14/games/'+path).update(val
 function dbPush(path,val){ if(db) return db.ref('germany-u14/games/'+path).push(val); }
 function dbRemove(path){ if(db) db.ref('germany-u14/games/'+path).remove(); }
 function btSet(path,val){ if(db) db.ref('germany-u14/bagtags/'+path).set(val); }
-
+function rosterSet(id,val){ if(db) db.ref('germany-u14/roster/'+id).set(val); }
+function rosterRemove(id){ if(db) db.ref('germany-u14/roster/'+id).remove(); }
+function rosterPush(val){ if(db) db.ref('germany-u14/roster').push(val); }
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
   S.view=view; S.gameId=gid||null; S.tab=tab||'setup';
@@ -374,11 +471,21 @@ window.goTo = function(view,gid,tab) {
   render(); window.scrollTo(0,0);
 };
 window.goToBagTags = function(){ S.view='bagtags'; S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
+window.goToRoster  = function(){ S.view='roster';  S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
 window.setBTView = function(v){ S.btView=v; renderApp(); };
 window.setBTGame = function(id){ S.btGame=id; renderApp(); };
 window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
 window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
-window.setLiveHalf = function(h){ S.liveHalf=h; renderApp(); };
+window.setLiveHalf = function(h){
+  // pause clock when switching halves
+  if(S.clock.running){
+    const idx=S.liveHalf-1;
+    S.clock.elapsed[idx]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
+    S.clock.startedAt=null; S.clock.running=false;
+    clearInterval(clockInterval); clockInterval=null;
+  }
+  S.liveHalf=h; renderApp();
+};
 window.closeModal = function(){ S.modal=null; renderApp(); };
 
 function render() {
@@ -386,7 +493,8 @@ function render() {
   app.innerHTML='';
   if(S.view==='season')       renderSeason(app);
   else if(S.view==='game')     renderGame(app);
-  else if(S.view==='positions') renderPositions(app);
+  else if(S.view==='roster')   renderRoster(app);
+  else if(S.view==='positions') renderRoster(app); // legacy alias
   else if(S.view==='bagtags')  renderBagTags(app);
   else if(S.view==='stats')    renderStats(app);
   const md=document.getElementById('modal');
@@ -400,7 +508,7 @@ function renderSeason(a) {
   a.innerHTML=`
   <div class="hd no-print">
     <h1>Germany U14 · Spring 2026</h1>
-    <button class="hd-btn" onclick="goTo('positions')" style="background:rgba(255,255,255,.15);margin-right:4px">👟 Positions</button>
+    <button class="hd-btn" onclick="goToRoster()" style="background:rgba(255,255,255,.15);margin-right:4px">👥 Roster</button>
     <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:4px">🧱 Bag Tags</button>
     ${(()=>{
       const anyDone=Object.values(S.allGames).some(g=>g?.meta?.status==='complete');
@@ -471,12 +579,12 @@ function renderSetup(c) {
   <div class="card">
     <div class="card-title">Game Info</div>
     <div class="fg"><label class="fl">Opponent</label>
-      <input class="fi" id="inp-opp" placeholder="Team name" value="${m.opponent||''}"></div>
+      <input class="fi" id="inp-opp" placeholder="Team name" value="${m.opponent||''}" onblur="autoSaveInfo()"></div>
     <div class="row2">
       <div class="fg"><label class="fl">Date</label>
-        <input class="fi" id="inp-date" type="date" value="${m.date||''}"></div>
+        <input class="fi" id="inp-date" type="date" value="${m.date||''}" onblur="autoSaveInfo()"></div>
       <div class="fg"><label class="fl">Location</label>
-        <input class="fi" id="inp-loc" placeholder="Field" value="${m.location||''}"></div>
+        <input class="fi" id="inp-loc" placeholder="Field" value="${m.location||''}" onblur="autoSaveInfo()"></div>
     </div>
     <div class="fg"><label class="fl">Status</label>
       <div class="sbg">
@@ -487,31 +595,46 @@ function renderSetup(c) {
   <div class="card">
     <div class="card-title">Player Availability — tap to toggle</div>
     <div class="av-grid">
-      ${PLAYERS.map(p=>{
+      ${players().map(p=>{
         const out=av[p]===false;
         return `<div class="av ${out?'out':'in'}" onclick="toggleAv('${p}')">${p}</div>`;
       }).join('')}
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Coach Notes</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0">Coach Notes</div>
+      <button class="btn btn-p btn-sm" onclick="saveNotes()">Save Notes</button>
+    </div>
     <textarea class="fi" id="inp-notes" placeholder="Tactics, opponent notes…">${m.notes||''}</textarea>
+    <div id="notes-saved" style="font-size:11px;color:var(--g);margin-top:5px;min-height:16px;opacity:0;transition:opacity .3s"></div>
   </div>
-  <div class="float no-print">
-    <button class="btn btn-s" onclick="goTo('season')">Back</button>
-    <button class="btn btn-p" onclick="saveSetup()">Save</button>
+  <div class="card" style="border-color:#fca5a5">
+    <div class="card-title" style="color:#b91c1c">Danger Zone</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Clears all lineup, live events, and score data for this game. Cannot be undone.</p>
+    <div id="clear-zone">
+      <button class="btn" style="background:#fff;color:#b91c1c;border:1.5px solid #b91c1c;width:100%" onclick="showClearConfirm()">🗑 Clear Game Data</button>
+    </div>
   </div>`;
 }
 
-window.saveSetup=function(){
+window.autoSaveInfo=function(){
   const opp=document.getElementById('inp-opp')?.value||'';
   const date=document.getElementById('inp-date')?.value||'';
   const loc=document.getElementById('inp-loc')?.value||'';
+  const cur=S.gameData.meta||{};
+  dbUpdate(`${S.gameId}/meta`,{opponent:opp,date,location:loc});
+  S.gameData.meta={...cur,opponent:opp,date,location:loc};
+  S.allGames[S.gameId]=S.gameData;
+};
+window.saveNotes=function(){
   const notes=document.getElementById('inp-notes')?.value||'';
   const cur=S.gameData.meta||{};
-  dbUpdate(`${S.gameId}/meta`,{opponent:opp,date,location:loc,notes,status:cur.status||'upcoming'});
-  S.gameData.meta={...cur,opponent:opp,date,location:loc,notes};
+  dbUpdate(`${S.gameId}/meta`,{notes});
+  S.gameData.meta={...cur,notes};
   S.allGames[S.gameId]=S.gameData;
+  const el=document.getElementById('notes-saved');
+  if(el){ el.textContent='✓ Saved'; el.style.opacity='1'; setTimeout(()=>el.style.opacity='0',2000); }
 };
 window.setStatus=function(st){
   const cur=S.gameData.meta||{};
@@ -527,7 +650,28 @@ window.toggleAv=function(p){
   renderApp();
 };
 
-// ── Lineup ─────────────────────────────────────────────────────────────
+window.showClearConfirm=function(){
+  const z=document.getElementById('clear-zone');
+  if(!z) return;
+  z.innerHTML=`
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:13px;font-weight:700;color:#b91c1c;margin-bottom:6px">⚠ Are you sure?</div>
+      <div style="font-size:12px;color:#666;margin-bottom:12px">This will permanently delete all lineup, events, and score data for this game.</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1;background:#fff;color:#555;border:1.5px solid #ccc" onclick="renderApp()">Cancel</button>
+        <button class="btn" style="flex:1;background:#b91c1c;color:#fff" onclick="clearGameData()">Yes, clear everything</button>
+      </div>
+    </div>`;
+};
+
+window.clearGameData=function(){
+  if(!db) return;
+  // Preserve meta (opponent, date) — only wipe gameplay data
+  const meta=S.gameData.meta||{};
+  db.ref(`germany-u14/games/${S.gameId}`).set({meta});
+  S.gameData={meta};
+  renderApp();
+};
 function renderLineup(c) {
   if(S.gameId==='g1'&&!S.gameData.lineup?.h1){
     S.gameData.lineup=G1_DEFAULT;
@@ -575,14 +719,17 @@ function renderPitch(container) {
     }
   });
 
+  const avail=S.gameData.availability||{};
+
   POS.forEach(pos=>{
     const name=ln[pos.id]||'';
     const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot===pos.id;
     const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
+    const isUnavail=name&&avail[name]===false;
     const slot=document.createElement('div'); slot.className='pslot';
     slot.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
     const tag=document.createElement('div'); tag.className='ptag'; tag.textContent=pos.tag;
-    const chip=makeChip(name,S.lhalf,pos.id,pos.id==='gk',isNew,isSel,container);
+    const chip=makeChip(name,S.lhalf,pos.id,pos.id==='gk',isNew,isSel,container,isUnavail);
     slot.appendChild(tag); slot.appendChild(chip);
     pitch.appendChild(slot);
   });
@@ -598,8 +745,9 @@ function renderPitch(container) {
   bArr.forEach((name,i)=>{
     const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot==='b'+i;
     const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
+    const isUnavail=name&&avail[name]===false;
     const slot=document.createElement('div'); slot.className='bslot';
-    const chip=makeChip(name,S.lhalf,'b'+i,false,isNew,isSel,container);
+    const chip=makeChip(name,S.lhalf,'b'+i,false,isNew,isSel,container,isUnavail);
     slot.appendChild(chip);
     // Sub-for label
     const sf=document.createElement('div');
@@ -614,7 +762,7 @@ function renderPitch(container) {
   container.appendChild(bench);
 }
 
-function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer) {
+function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer,isUnavail) {
   const isSwapTarget=S.selected&&!(S.selected.half===half&&S.selected.slot===slot);
   if(!name){
     const e=document.createElement('div');
@@ -624,8 +772,9 @@ function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer) {
     return e;
   }
   const c=document.createElement('div');
-  c.className='chip'+(isNew?' new':'')+(isSel?' sel':'');
-  c.textContent=name;
+  c.className='chip'+(isNew?' new':'')+(isSel?' sel':'')+(isUnavail?' unavail':'');
+  c.textContent=isUnavail?`${name} ⚠`:name;
+  c.title=isUnavail?`${name} marked unavailable — check before playing`:'';
   c.onclick=(e)=>{ e.stopPropagation(); tapSlot(half,slot,pitchContainer); };
   return c;
 }
@@ -712,29 +861,33 @@ window.confirmBF=function(){
 // ── Live ───────────────────────────────────────────────────────────────
 function renderLive(c){
   const h=S.liveHalf;
+  const hk=`h${h}`;
+  const ln=(S.gameData.lineup||{})[hk]||{};
+  const avail=S.gameData.availability||{};
   const onField=currentOnField(h);
+  const onFieldSet=new Set(onField);
+  const benchPlayers=players().filter(p=>!onFieldSet.has(p)&&avail[p]!==false);
+  const unavailOnField=onField.filter(p=>avail[p]===false);
   const events=sortedEvents();
+
   c.innerHTML=`
-  <div class="half-sw no-print">
-    <button class="hs ${h===1?'on':''}" onclick="setLiveHalf(1)">First Half</button>
-    <button class="hs ${h===2?'on':''}" onclick="setLiveHalf(2)">Second Half</button>
-  </div>
-  <div class="live-hd">
-    <div class="live-half-lbl">Half ${h}</div>
-    <div class="min-box">
-      <span style="font-size:12px;opacity:.8">Min</span>
-      <input class="min-in" id="cur-min" type="number" min="0" max="70" placeholder="${h===1?'0–35':'35–70'}">
+  <!-- Clock -->
+  <div class="clock-bar">
+    <div class="clock-half-sw">
+      <button class="clock-hs ${h===1?'on':''}" onclick="setLiveHalf(1)">H1</button>
+      <button class="clock-hs ${h===2?'on':''}" onclick="setLiveHalf(2)">H2</button>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-title">On Field</div>
-    <div class="on-field">
-      ${onField.map(p=>`
-        <div class="of">
-          ${p}<button class="off-btn" onclick="quickSub('${p}')" title="Sub off">×</button>
-        </div>`).join('')||'<span style="color:var(--muted);font-size:13px">Set lineup first</span>'}
+    <div class="clock-display">
+      <div class="clock-time" id="clock-disp">${clockDisplay()}</div>
+      <div class="clock-sub">Half ${h} · tap ▶ to start</div>
     </div>
+    <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()">${S.clock.running?'⏸':'▶'}</button>
+    <button class="clock-btn reset" onclick="resetClock()" title="Reset clock">↺</button>
   </div>
+  ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
+    ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
+  </div>`:''}
+  <div id="live-pitch-wrap"></div>
   <div class="act-row">
     <button class="act act-sub" onclick="showModal('sub')">↕ Sub</button>
     <button class="act act-goal" onclick="showModal('goal')">⚽ Goal</button>
@@ -748,6 +901,77 @@ function renderLive(c){
     </div>
   </div>
   ${renderFinalScoreCard()}`;
+
+  renderLivePitch(document.getElementById('live-pitch-wrap'), ln, avail, onField, benchPlayers, h);
+}
+
+function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
+  const onFieldSet=new Set(onField);
+  container.innerHTML='';
+
+  const pitch=document.createElement('div');
+  pitch.className='live-pitch';
+  pitch.innerHTML=`<svg viewBox="0 0 300 360" preserveAspectRatio="none">
+    <rect x="1" y="1" width="298" height="358" fill="none" stroke="white" stroke-width="1.5" opacity=".4"/>
+    <line x1="0" y1="180" x2="300" y2="180" stroke="white" stroke-width="1" opacity=".25"/>
+    <circle cx="150" cy="180" r="36" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <circle cx="150" cy="180" r="2" fill="white" opacity=".3"/>
+    <rect x="65" y="1" width="170" height="57" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="100" y="1" width="100" height="22" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="65" y="302" width="170" height="57" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="100" y="336" width="100" height="22" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+  </svg>`;
+
+  POS.forEach(pos=>{
+    // Find who is actually at this position after subs
+    // We map original position to show current player there
+    const originalName=ln[pos.id]||'';
+    // Find if this original player is still on field; if not, slot is vacated
+    const name=onFieldSet.has(originalName)?originalName:'';
+    if(!name) return; // don't show empty slots on live view
+
+    const isUnavail=avail[name]===false;
+    const wrap=document.createElement('div');
+    wrap.className='lchip';
+    wrap.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
+    wrap.innerHTML=`<div class="lchip-tag">${pos.tag}</div>
+      <div class="lchip-name ${isUnavail?'unavail':''}">${name}${isUnavail?' ⚠':''}</div>`;
+    wrap.onclick=()=>{ S.modal={type:'sub',playerOff:name,playerOn:null,minute:clockMinute()}; renderApp(); };
+    pitch.appendChild(wrap);
+  });
+
+  // Subs who came on — show at bottom if not in original position
+  onField.forEach(p=>{
+    const inOrigPos=POS.some(pos=>ln[pos.id]===p);
+    if(inOrigPos) return;
+    // sub-on player — place in a generic area at top
+    const isUnavail=avail[p]===false;
+    const wrap=document.createElement('div');
+    wrap.className='lchip';
+    wrap.style.cssText=`left:50%;top:18%`;
+    wrap.innerHTML=`<div class="lchip-tag">SUB</div>
+      <div class="lchip-name sub-hint ${isUnavail?'unavail':''}">${p}</div>`;
+    wrap.onclick=()=>{ S.modal={type:'sub',playerOff:p,playerOn:null,minute:clockMinute()}; renderApp(); };
+    pitch.appendChild(wrap);
+  });
+
+  container.appendChild(pitch);
+
+  // Bench
+  const bench=document.createElement('div'); bench.className='live-bench-row';
+  bench.innerHTML=`<div class="blabel" style="color:rgba(255,255,255,.6)">Bench — tap to bring on</div><div class="live-bench-chips" id="live-bench-chips"></div>`;
+  container.appendChild(bench);
+
+  const bc=bench.querySelector('#live-bench-chips');
+  if(!benchPlayers.length){ bc.innerHTML='<span style="color:rgba(255,255,255,.5);font-size:12px">No bench players available</span>'; }
+  benchPlayers.forEach(p=>{
+    const isUnavail=avail[p]===false;
+    const btn=document.createElement('button');
+    btn.className='lb-chip'+(isUnavail?' unavail':'');
+    btn.textContent=isUnavail?`${p} ⚠`:p;
+    btn.onclick=()=>{ S.modal={type:'sub',playerOff:null,playerOn:p,minute:clockMinute()}; renderApp(); };
+    bc.appendChild(btn);
+  });
 }
 
 function renderFinalScoreCard(){
@@ -828,8 +1052,8 @@ function evHtml(e){
 }
 
 window.delEvent=function(id){ if(confirm('Delete?')) dbRemove(`${S.gameId}/events/${id}`); };
-window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,minute:''}; renderApp(); };
-window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,scorer:null,assistedBy:null,minute:'',text:''}; renderApp(); };
+window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,minute:clockMinute()}; renderApp(); };
+window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,scorer:null,assistedBy:null,minute:clockMinute(),text:''}; renderApp(); };
 window.selectP=function(field,name){ S.modal[field]=name===S.modal[field]?null:name; renderModal(document.getElementById('modal')); };
 window.setModalMin=function(v){ S.modal.minute=v; };
 window.setModalText=function(v){ S.modal.text=v; };
@@ -844,6 +1068,7 @@ function renderModal(md){
   else if(m.type==='goal') buildGoalModal(box);
   else if(m.type==='note') buildNoteModal(box);
   else if(m.type==='benchFor') buildBenchForModal(box);
+  else if(m.type==='rosterEdit') buildRosterEditModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
   md.appendChild(ov);
@@ -858,57 +1083,65 @@ function buildSubModal(box){
   const h=S.liveHalf;
   const onF=currentOnField(h);
   const hk=`h${h}`;
-  const ln=(S.gameData.lineup||{})[hk]||{};
   const avail=S.gameData.availability||{};
-  const allBench=PLAYERS.filter(p=>!onF.includes(p)&&avail[p]!==false);
+  const allBench=players().filter(p=>!onF.includes(p)&&avail[p]!==false);
   const m=S.modal;
-  const ok=m.playerOff&&m.playerOn&&m.minute!=='';
+  const ok=m.playerOff&&m.playerOn;
   box.innerHTML=`<div class="mt">Substitution<button class="mc" onclick="closeModal()">×</button></div>
     <div class="modal-section">Who comes OFF?</div>${pGrid('playerOff',onF)}
     <div class="modal-section">Who comes ON?</div>${pGrid('playerOn',allBench)}
-    <div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
-      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 22"
-       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
+      <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
+      <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
+       value="${m.minute}" oninput="setModalMin(this.value)">
+      <span style="font-size:11px;color:var(--muted)">Auto-filled from clock — edit if needed</span>
+    </div>
     <button class="conf" ${ok?'':'disabled'} onclick="confirmSub()">Confirm Sub</button>`;
 }
 window.confirmSub=function(){
-  const m=S.modal; if(!m.playerOff||!m.playerOn||m.minute==='') return;
-  dbPush(`${S.gameId}/events`,{type:'sub',minute:+m.minute,half:S.liveHalf,playerOff:m.playerOff,playerOn:m.playerOn,timestamp:Date.now()});
+  const m=S.modal; if(!m.playerOff||!m.playerOn) return;
+  dbPush(`${S.gameId}/events`,{type:'sub',minute:+m.minute||0,half:S.liveHalf,playerOff:m.playerOff,playerOn:m.playerOn,timestamp:Date.now()});
   closeModal();
 };
 
 function buildGoalModal(box){
   const onF=currentOnField(S.liveHalf);
-  const m=S.modal; const ok=m.scorer&&m.minute!=='';
+  const m=S.modal; const ok=m.scorer;
   box.innerHTML=`<div class="mt">Goal<button class="mc" onclick="closeModal()">×</button></div>
     <div class="modal-section">Who scored?</div>${pGrid('scorer',onF)}
     <div class="modal-section">Assisted by? (optional)</div>
     <div class="psg"><button class="psb none-opt ${m.assistedBy===''?'sel':''}" onclick="selectP('assistedBy','')">No assist</button></div>
     ${pGrid('assistedBy',onF.filter(p=>p!==m.scorer))}
-    <div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
-      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 18"
-       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
+      <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
+      <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
+       value="${m.minute}" oninput="setModalMin(this.value)">
+      <span style="font-size:11px;color:var(--muted)">Auto-filled — edit if needed</span>
+    </div>
     <button class="conf" ${ok?'':'disabled'} onclick="confirmGoal()">Confirm Goal</button>`;
 }
 window.confirmGoal=function(){
-  const m=S.modal; if(!m.scorer||m.minute==='') return;
-  dbPush(`${S.gameId}/events`,{type:'goal',minute:+m.minute,half:S.liveHalf,scorer:m.scorer,assistedBy:m.assistedBy||null,timestamp:Date.now()});
+  const m=S.modal; if(!m.scorer) return;
+  dbPush(`${S.gameId}/events`,{type:'goal',minute:+m.minute||0,half:S.liveHalf,scorer:m.scorer,assistedBy:m.assistedBy||null,timestamp:Date.now()});
   closeModal();
 };
 
 function buildNoteModal(box){
-  const m=S.modal; const ok=m.text&&m.minute!=='';
+  const m=S.modal; const ok=m.text;
   box.innerHTML=`<div class="mt">Note<button class="mc" onclick="closeModal()">×</button></div>
-    <div class="fg"><label class="fl">Minute</label>
-      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 30"
-       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
+      <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
+      <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
+       value="${m.minute}" oninput="setModalMin(this.value)">
+      <span style="font-size:11px;color:var(--muted)">Auto-filled — edit if needed</span>
+    </div>
     <div class="fg"><label class="fl">Note</label>
       <textarea class="fi" placeholder="Formation change, press trigger…" oninput="setModalText(this.value)">${m.text}</textarea></div>
     <button class="conf" ${ok?'':'disabled'} onclick="confirmNote()">Save Note</button>`;
 }
 window.confirmNote=function(){
-  const m=S.modal; if(!m.text||m.minute==='') return;
-  dbPush(`${S.gameId}/events`,{type:'note',minute:+m.minute,half:S.liveHalf,text:m.text,timestamp:Date.now()});
+  const m=S.modal; if(!m.text) return;
+  dbPush(`${S.gameId}/events`,{type:'note',minute:+m.minute||0,half:S.liveHalf,text:m.text,timestamp:Date.now()});
   closeModal();
 };
 
@@ -920,7 +1153,7 @@ function renderReport(c){
   const events=sortedEvents();
   const goals=events.filter(e=>e.type==='goal');
   const maxPT=Math.max(...Object.values(pt),1);
-  const ptRows=PLAYERS.map(p=>({p,m:pt[p]||0})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m);
+  const ptRows=players().map(p=>({p,m:pt[p]||0})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m);
   const opp=m.opponent||'Opponent';
   c.innerHTML=`
   <div class="score-card" style="margin-bottom:14px">
@@ -968,7 +1201,7 @@ function buildGoalTable(goals){
 
 // ── Playing time ───────────────────────────────────────────────────────
 function computePT(gd){
-  const pt={}; PLAYERS.forEach(p=>pt[p]=0);
+  const pt={}; players().forEach(p=>pt[p]=0);
   const ln=gd.lineup||{};
   const events=Object.values(gd.events||{}).sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
   ['h1','h2'].forEach(hk=>{
@@ -987,17 +1220,17 @@ function computePT(gd){
 // ── Season stats ───────────────────────────────────────────────────────
 function renderStats(a){
   const totPT={},totG={},totA={},gamesP={};
-  PLAYERS.forEach(p=>{ totPT[p]=0;totG[p]=0;totA[p]=0;gamesP[p]=0; });
+  players().forEach(p=>{ totPT[p]=0;totG[p]=0;totA[p]=0;gamesP[p]=0; });
   Object.values(S.allGames).forEach(gd=>{
     if(!gd) return;
     const pt=computePT(gd);
-    PLAYERS.forEach(p=>{ if(pt[p]>0){ totPT[p]+=pt[p]; gamesP[p]++; } });
+    players().forEach(p=>{ if(pt[p]>0){ totPT[p]+=pt[p]; gamesP[p]++; } });
     Object.values(gd.events||{}).filter(e=>e.type==='goal').forEach(e=>{
       if(e.scorer) totG[e.scorer]=(totG[e.scorer]||0)+1;
       if(e.assistedBy) totA[e.assistedBy]=(totA[e.assistedBy]||0)+1;
     });
   });
-  const rows=PLAYERS.map(p=>({p,min:totPT[p],g:totG[p],a:totA[p],gp:gamesP[p]})).sort((a,b)=>b.min-a.min);
+  const rows=players().map(p=>({p,min:totPT[p],g:totG[p],a:totA[p],gp:gamesP[p]})).sort((a,b)=>b.min-a.min);
   a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
@@ -1019,17 +1252,22 @@ function renderStats(a){
 }
 
 // ── Positions view ─────────────────────────────────────────────────────
-function renderPositions(a){
-  const rows = PLAYER_DATA.map(p => {
-    const posParts = p.positions.split(', ');
-    const primary = posParts[0];
+function renderRoster(a){
+  const roster = S.roster || PLAYER_DATA;
+  const rows = roster.map(p => {
+    const posParts = (p.positions||'').split(', ');
+    const primary = posParts[0]||'—';
     const rest = posParts.slice(1).join(', ');
     const footClass = p.foot==='Both'?'both':'';
     const gkClass = p.goalie==='Yes'?'gk-yes':p.goalie==='Open'?'gk-open':'gk-no';
     const gkLabel = p.goalie==='Yes'?'Yes ✓':p.goalie==='Open'?'Open':'No';
-    return `<tr>
-      <td><strong>${p.name}</strong><span class="grade-badge">${p.grade}</span></td>
-      <td><span class="foot-badge ${footClass}">${p.foot}</span></td>
+    const idAttr = p.id?`data-id="${p.id}"`:'';
+    return `<tr onclick="openRosterEdit('${p.id||''}')" style="cursor:pointer">
+      <td>
+        <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id||''}')" title="Remove player">×</button>
+        <strong>${p.name}</strong><span class="grade-badge">${p.grade||''}</span>
+      </td>
+      <td><span class="foot-badge ${footClass}">${p.foot||'R'}</span></td>
       <td><span class="pos-primary">${primary}</span>${rest?`<br><span class="pos-rest">${rest}</span>`:''}</td>
       <td class="${gkClass}">${gkLabel}</td>
     </tr>`;
@@ -1038,9 +1276,12 @@ function renderPositions(a){
   a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
-    <h1>👟 Player Positions</h1>
+    <h1>👥 Player Roster</h1>
   </div>
   <div class="content">
+    <div class="add-player-row">
+      <button class="btn btn-p btn-sm" onclick="openRosterEdit(null)">+ Add Player</button>
+    </div>
     <div class="card" style="padding:0;overflow:hidden">
       <table class="pos-table">
         <thead><tr>
@@ -1053,11 +1294,84 @@ function renderPositions(a){
       </table>
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">
-      Position order reflects player preference from pre-season assessment.
-      <span style="background:#fef3c7;color:#92400e;font-weight:700;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px">Both</span> = two-footed
+      Tap any row to edit · × to remove · Position order reflects player preference
     </div>
   </div>`;
 }
+
+window.openRosterEdit=function(id){
+  const p = id ? (S.roster||[]).find(r=>r.id===id) : null;
+  S.modal = {
+    type:'rosterEdit',
+    id: id||null,
+    name: p?.name||'',
+    grade: p?.grade||'6th',
+    foot: p?.foot||'R',
+    positions: p?.positions||'',
+    goalie: p?.goalie||'No',
+  };
+  renderApp();
+};
+
+window.deletePlayer=function(id){
+  if(!id) return;
+  const p=(S.roster||[]).find(r=>r.id===id);
+  if(!confirm(`Remove ${p?.name||'this player'} from the roster? This cannot be undone.`)) return;
+  rosterRemove(id);
+};
+
+function buildRosterEditModal(box){
+  const m=S.modal;
+  const isNew=!m.id;
+  const grades=['5th','6th','7th','8th'];
+  const feet=['R','L','Both'];
+  const goalieOpts=['Yes','Open','No'];
+  box.innerHTML=`
+    <div class="mt">${isNew?'Add Player':'Edit Player'}<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="rm-row">
+      <div>
+        <label class="rm-label">First Name</label>
+        <input class="fi" id="rm-name" placeholder="Player name" value="${m.name}" oninput="S.modal.name=this.value">
+      </div>
+      <div>
+        <label class="rm-label">Grade</label>
+        <div class="rm-seg">
+          ${grades.map(g=>`<button class="${m.grade===g?'on':''}" onclick="S.modal.grade='${g}';renderModal(document.getElementById('modal'))">${g}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="rm-full">
+      <label class="rm-label">Dominant Foot</label>
+      <div class="rm-seg">
+        ${feet.map(f=>`<button class="${m.foot===f?'on':''}" onclick="S.modal.foot='${f}';renderModal(document.getElementById('modal'))">${f}</button>`).join('')}
+      </div>
+    </div>
+    <div class="rm-full">
+      <label class="rm-label">Position Preferences <span style="font-weight:400;text-transform:none;font-size:10px">(comma-separated, in order)</span></label>
+      <input class="fi" id="rm-pos" placeholder="e.g. Forward, Midfield, Defense" value="${m.positions}" oninput="S.modal.positions=this.value">
+    </div>
+    <div class="rm-full">
+      <label class="rm-label">Willing to play Goalie?</label>
+      <div class="rm-seg">
+        ${goalieOpts.map(g=>`<button class="${m.goalie===g?'on':''}" onclick="S.modal.goalie='${g}';renderModal(document.getElementById('modal'))">${g}</button>`).join('')}
+      </div>
+    </div>
+    <button class="conf" onclick="saveRosterPlayer()">${isNew?'Add to Roster':'Save Changes'}</button>
+    ${!isNew?`<button class="btn" style="width:100%;margin-top:8px;background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="deletePlayer('${m.id}');closeModal()">Remove Player</button>`:''}`;
+}
+
+window.saveRosterPlayer=function(){
+  const m=S.modal;
+  const name=(m.name||'').trim();
+  if(!name){ alert('Please enter a player name.'); return; }
+  const data={name,grade:m.grade,foot:m.foot,positions:m.positions,goalie:m.goalie};
+  if(m.id){
+    rosterSet(m.id,data);
+  } else {
+    rosterPush(data);
+  }
+  closeModal();
+};
 
 // ── Bag Tag helpers ────────────────────────────────────────────────────
 function gtAwardees(gameId,tagId){ return (S.bagTags[gameId]||{})[tagId]||[]; }
@@ -1088,8 +1402,8 @@ window.toggleTag=function(gameId,tagId,player){
 window.awardCleanSheet=function(gameId){
   if(!S.bagTags[gameId]) S.bagTags[gameId]={};
   const cur=S.bagTags[gameId]['cleanSheet']||[];
-  const allOn=PLAYERS.every(p=>cur.includes(p));
-  const next=allOn?[]:([...PLAYERS]);
+  const allOn=players().every(p=>cur.includes(p));
+  const next=allOn?[]:([...players()]);
   S.bagTags[gameId]['cleanSheet']=next;
   btSet(`${gameId}/cleanSheet`,next);
   renderApp();
@@ -1119,11 +1433,11 @@ function renderBTAward(c){
   const opp=gd.meta?.opponent||S.btGame;
   const isShutout=gd.meta?.scoreUs!==undefined&&+gd.meta.scoreThem===0&&gd.meta.scoreThem!=='';
   const csArr=gtAwardees(S.btGame,'cleanSheet');
-  const csAllAwarded=PLAYERS.every(p=>csArr.includes(p));
+  const csAllAwarded=players().every(p=>csArr.includes(p));
 
   // Who still needs Hardest Worker
   const hwHas=seasonAwardees('hardestWorker');
-  const hwNeeds=PLAYERS.filter(p=>!hwHas.has(p));
+  const hwNeeds=players().filter(p=>!hwHas.has(p));
 
   const gameOpts=GAMES.map(g=>{
     const d=S.allGames[g.id]||{};
@@ -1164,7 +1478,7 @@ function renderBTAward(c){
       const gameAwardees=gtAwardees(S.btGame,tag.id);
       const seasonHas=tag.once?seasonAwardees(tag.id):null;
 
-      PLAYERS.forEach(p=>{
+      players().forEach(p=>{
         const awarded=gameAwardees.includes(p);
         // For once tags: if awarded in ANOTHER game, show as done
         const seasonDone=tag.once&&!awarded&&seasonHas?.has(p);
@@ -1187,7 +1501,7 @@ function renderBTGrid(c){
   const totals={};
   TAGS.forEach(t=>totals[t.id]=0);
 
-  const rows=PLAYERS.map(p=>{
+  const rows=players().map(p=>{
     const needsHW=!hwHas.has(p);
     let cells='';
     TAGS.forEach(tag=>{
