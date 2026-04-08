@@ -26,6 +26,18 @@ button{font-family:inherit}
 .tabs{display:flex;background:var(--gd);overflow-x:auto}
 .tab{flex:1;min-width:64px;padding:10px 4px;background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
 .tab.on{color:#fff;border-bottom-color:var(--gold)}
+.tab.locked{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+.score-card{background:var(--gl);border-radius:var(--r);padding:16px;margin-top:14px;border:1.5px solid var(--g)}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.score-team{flex:1;font-size:13px;font-weight:700;color:var(--g)}
+.score-in{width:64px;padding:10px;border:1.5px solid var(--border);border-radius:6px;font-size:22px;font-weight:700;text-align:center;color:var(--text)}
+.score-sep{font-size:22px;font-weight:700;color:var(--muted)}
+.score-display{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 0 4px}
+.score-num{font-size:36px;font-weight:700;color:var(--g)}
+.score-vs{font-size:20px;color:var(--muted);font-weight:400}
+.score-teams{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.final-badge{display:inline-block;background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 
 .content{padding:14px 14px 90px;max-width:860px;margin:0 auto}
 .card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
@@ -193,7 +205,6 @@ const FB_CFG = {
   storageBucket:     "celticgermany2026.firebasestorage.app",
   messagingSenderId: "389662354605",
   appId:             "1:389662354605:web:bdb94aff43b9054b7b6a24"
-
 };
 // ══════════════════════════════════════════════════════════════════════
 
@@ -340,8 +351,14 @@ function renderGame(a) {
     <h1>${opp}</h1>
   </div>
   <div class="tabs no-print">
-    ${['setup','lineup','live','report'].map(t=>`
+    ${['setup','lineup','live'].map(t=>`
       <button class="tab ${S.tab===t?'on':''}" onclick="setTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+    ${(()=>{
+      const hasScore = S.gameData.meta?.scoreUs !== undefined && S.gameData.meta?.scoreUs !== '';
+      return `<button class="tab ${S.tab==='report'?'on':''} ${!hasScore?'locked':''}"
+        onclick="${hasScore?"setTab('report')":''}" title="${!hasScore?'Enter final score on Live tab to unlock':''}">
+        Report ${!hasScore?'🔒':''}</button>`;
+    })()}
   </div>
   <div class="content" id="tab-content"></div>`;
   const tc=document.getElementById('tab-content');
@@ -635,8 +652,56 @@ function renderLive(c){
       ${events.length===0?'<div style="color:var(--muted);font-size:13px;padding:8px 0">No events yet</div>':''}
       ${events.map(e=>evHtml(e)).join('')}
     </div>
+  </div>
+  ${renderFinalScoreCard()}`;
+}
+
+function renderFinalScoreCard(){
+  const m=S.gameData.meta||{};
+  const hasScore=m.scoreUs!==undefined&&m.scoreUs!=='';
+  const opp=m.opponent||'Opponent';
+  if(hasScore){
+    return `<div class="score-card">
+      <div class="final-badge">Final Score</div>
+      <div class="score-display">
+        <span class="score-num">${m.scoreUs}</span>
+        <span class="score-vs">–</span>
+        <span class="score-num">${m.scoreThem}</span>
+      </div>
+      <div class="score-teams"><span>Germany</span><span>${opp}</span></div>
+      <button class="btn btn-s btn-sm" style="margin-top:12px;width:100%" onclick="clearFinalScore()">Edit Score</button>
+    </div>`;
+  }
+  return `<div class="score-card">
+    <div class="card-title" style="margin-bottom:8px">Final Score — unlocks Report tab</div>
+    <div class="score-row">
+      <div class="score-team">Germany</div>
+      <input class="score-in" id="score-us" type="number" min="0" max="20" placeholder="0">
+      <div class="score-sep">–</div>
+      <input class="score-in" id="score-them" type="number" min="0" max="20" placeholder="0">
+      <div class="score-team" style="text-align:right">${opp}</div>
+    </div>
+    <button class="btn btn-p" style="width:100%" onclick="saveFinalScore()">Submit Final Score &amp; Unlock Report</button>
   </div>`;
 }
+
+window.saveFinalScore=function(){
+  const us=document.getElementById('score-us')?.value;
+  const them=document.getElementById('score-them')?.value;
+  if(us===''||us===null||them===''||them===null) return;
+  const upd={scoreUs:+us, scoreThem:+them, status:'complete'};
+  S.gameData.meta={...(S.gameData.meta||{}),...upd};
+  dbUpdate(`${S.gameId}/meta`,upd);
+  renderApp();
+};
+
+window.clearFinalScore=function(){
+  if(!confirm('Edit the final score?')) return;
+  const upd={scoreUs:'',scoreThem:'',status:'live'};
+  S.gameData.meta={...(S.gameData.meta||{}),...upd};
+  dbUpdate(`${S.gameId}/meta`,upd);
+  renderApp();
+};
 
 function currentOnField(half){
   const hk=`h${half}`;
@@ -756,12 +821,23 @@ window.confirmNote=function(){
 // ── Report ─────────────────────────────────────────────────────────────
 function renderReport(c){
   const gd=S.gameData;
+  const m=gd.meta||{};
   const pt=computePT(gd);
   const events=sortedEvents();
   const goals=events.filter(e=>e.type==='goal');
   const maxPT=Math.max(...Object.values(pt),1);
   const ptRows=PLAYERS.map(p=>({p,m:pt[p]||0})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m);
+  const opp=m.opponent||'Opponent';
   c.innerHTML=`
+  <div class="score-card" style="margin-bottom:14px">
+    <div class="final-badge">Final Score</div>
+    <div class="score-display">
+      <span class="score-num">${m.scoreUs}</span>
+      <span class="score-vs">–</span>
+      <span class="score-num">${m.scoreThem}</span>
+    </div>
+    <div class="score-teams"><span>Germany</span><span>${opp}</span></div>
+  </div>
   <div class="card">
     <div class="card-title">Playing Time</div>
     ${ptRows.map(({p,m})=>`<div class="pt-row">
