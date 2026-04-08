@@ -18,28 +18,22 @@ body{font-family:-apple-system,Arial,sans-serif;background:var(--bg);color:var(-
 *{-webkit-tap-highlight-color:transparent}
 button{font-family:inherit}
 
-/* ── Header ── */
 .hd{background:var(--g);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .hd h1{font-size:15px;font-weight:700;flex:1;letter-spacing:.3px}
 .hd-btn{background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 11px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
 .back-btn{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;padding:0 4px;line-height:1}
 
-/* ── Tabs ── */
 .tabs{display:flex;background:var(--gd);overflow-x:auto}
 .tab{flex:1;min-width:64px;padding:10px 4px;background:none;border:none;color:rgba(255,255,255,.6);font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
 .tab.on{color:#fff;border-bottom-color:var(--gold)}
 
-/* ── Content ── */
 .content{padding:14px 14px 90px;max-width:860px;margin:0 auto}
-
-/* ── Cards ── */
 .card{background:#fff;border-radius:var(--r);padding:14px;margin-bottom:12px;border:1px solid var(--border)}
 .card-title{font-size:11px;font-weight:700;color:var(--g);margin-bottom:10px;text-transform:uppercase;letter-spacing:.6px}
 
-/* ── Season grid ── */
 .game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .gc{background:#fff;border-radius:var(--r);padding:13px 11px;border:1.5px solid var(--border);cursor:pointer;transition:border-color .15s}
-.gc:hover{border-color:var(--g)}
+.gc:hover,.gc:active{border-color:var(--g)}
 .gc.live{border-color:#e74c3c;border-width:2px}
 .gc.complete{background:var(--gl)}
 .gc .gnum{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
@@ -52,7 +46,6 @@ button{font-family:inherit}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .sec-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:14px 0 7px}
 
-/* ── Forms ── */
 .fg{margin-bottom:12px}
 .fl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block}
 .fi{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:6px;font-size:14px;color:var(--text);background:#fff}
@@ -60,16 +53,14 @@ button{font-family:inherit}
 textarea.fi{min-height:78px;resize:vertical}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* ── Status buttons ── */
 .sbg{display:flex;gap:7px}
 .sb{flex:1;padding:9px 6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
 .sb.a-upcoming{background:#f0f0f0;color:#444;border-color:#aaa}
 .sb.a-live{background:#fde8e8;color:#c0392b;border-color:#c0392b}
 .sb.a-complete{background:var(--gl);color:var(--g);border-color:var(--g)}
 
-/* ── Availability ── */
 .av-grid{display:flex;flex-wrap:wrap;gap:6px}
-.av{padding:7px 11px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s;user-select:none}
+.av{padding:7px 11px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;user-select:none}
 .av.in{background:var(--gl);color:var(--g);border-color:var(--g)}
 .av.out{background:#fde8e8;color:var(--red);border-color:var(--red);text-decoration:line-through}
 
@@ -77,104 +68,112 @@ textarea.fi{min-height:78px;resize:vertical}
 .half-tabs{display:flex;gap:8px;margin-bottom:10px}
 .ht{flex:1;padding:9px;background:var(--gl);border:none;border-radius:6px;font-size:13px;font-weight:700;color:var(--g);cursor:pointer}
 .ht.on{background:var(--g);color:#fff}
-.pitch{background:#2d7a3a;border-radius:8px 8px 0 0;position:relative;height:370px;border:2px solid #1a5c28;overflow:hidden}
+
+.swap-hint{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;min-height:18px;transition:color .2s}
+.swap-hint.active{color:var(--g);font-weight:700}
+
+.pitch{background:#2d7a3a;border-radius:8px 8px 0 0;position:relative;height:390px;border:2px solid #1a5c28;overflow:hidden;cursor:pointer}
 .pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pslot{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center}
 .ptag{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px;letter-spacing:.4px}
-.chip{background:var(--red);color:#fff;padding:5px 9px;border-radius:4px;font-size:11px;font-weight:700;cursor:grab;white-space:nowrap;border:1.5px solid rgba(255,255,255,.35);text-align:center;min-width:54px;user-select:none}
-.chip:active{cursor:grabbing}
+
+/* Chips */
+.chip{background:var(--red);color:#fff;padding:6px 10px;border-radius:5px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:58px;cursor:pointer;transition:transform .1s,outline .1s;user-select:none}
 .chip.gk{background:var(--gold);color:#3a1f00}
-.chip.new{border-color:#ffd700;border-width:2px}
-.chip.drag{opacity:.3}
-.epslot{background:rgba(255,255,255,.12);border:1.5px dashed rgba(255,255,255,.35);border-radius:4px;min-width:54px;height:28px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:10px}
-.dz{border-radius:4px}
-.dz.ov{outline:2px dashed #fff}
+.chip.new{border-color:#ffd700}
+.chip.sel{outline:3px solid #fff;outline-offset:2px;transform:scale(1.08)}
+.chip.sel.gk{outline-color:#fff}
+.epslot{background:rgba(255,255,255,.12);border:2px dashed rgba(255,255,255,.35);border-radius:5px;min-width:58px;height:32px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:10px;cursor:pointer;transition:background .15s}
+.epslot.swap-target{background:rgba(255,215,0,.25);border-color:#ffd700;color:#ffd700}
+
+/* Bench */
 .bench{background:#145525;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a5c28;border-top:none;margin-bottom:12px}
 .blabel{font-size:9px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
 .bslots{display:flex;gap:5px}
-.bslot{flex:1}
-.bslot .chip{width:100%;font-size:10px;padding:4px;min-width:0;background:#1a6b2f}
-.bslot .epslot{width:100%}
+.bslot{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bslot .chip{width:100%;font-size:10px;padding:5px 3px;min-width:0;background:#1a6b2f}
+.bslot .chip.sel{outline-color:#ffd700}
+.bslot .epslot{width:100%;height:28px}
+
+/* Sub-for label */
+.sub-for-lbl{font-size:9px;color:rgba(255,255,255,.55);text-align:center;cursor:pointer;padding:1px 4px;border-radius:3px;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}
+.sub-for-lbl:active{background:rgba(255,255,255,.1)}
+.sub-for-lbl.set{color:#ffd700;font-weight:700}
+
 .print-btn-wrap{text-align:right;margin-bottom:6px}
 
-/* ── Live ── */
+/* Live */
 .live-hd{display:flex;align-items:center;gap:10px;background:var(--g);color:#fff;padding:11px 13px;border-radius:8px;margin-bottom:12px}
 .live-half-lbl{font-size:14px;font-weight:700;flex:1}
 .min-box{display:flex;align-items:center;gap:6px;font-size:13px}
 .min-in{width:58px;padding:5px 7px;border:none;border-radius:6px;font-size:16px;font-weight:700;text-align:center;background:rgba(255,255,255,.2);color:#fff}
 .min-in::placeholder{color:rgba(255,255,255,.5)}
 .half-sw{display:flex;gap:7px;margin-bottom:10px}
-.hs{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
+.hs{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted)}
 .hs.on{background:var(--g);color:#fff;border-color:var(--g)}
 .on-field{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.of{display:flex;align-items:center;gap:4px;background:var(--red);color:#fff;padding:7px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.of{display:flex;align-items:center;gap:4px;background:var(--red);color:#fff;padding:8px 11px;border-radius:20px;font-size:13px;font-weight:700}
 .of.gk{background:var(--gold);color:#3a1f00}
-.off-btn{background:rgba(255,255,255,.25);border:none;color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:11px;line-height:18px;text-align:center;margin-left:2px}
+.off-btn{background:rgba(255,255,255,.25);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:13px;line-height:20px;text-align:center;margin-left:2px}
 .act-row{display:flex;gap:8px;margin-bottom:14px}
-.act{flex:1;padding:13px 6px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
+.act{flex:1;padding:14px 6px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
 .act-sub{background:#2980b9;color:#fff}
 .act-goal{background:#27ae60;color:#fff}
 .act-note{background:#8e44ad;color:#fff}
 .ev-log{}
-.ev{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
-.ev-min{font-size:11px;font-weight:700;color:var(--g);min-width:30px;padding-top:1px}
+.ev{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ev-min{font-size:11px;font-weight:700;color:var(--g);min-width:30px;padding-top:2px}
 .ev-ico{min-width:20px;font-size:15px}
 .ev-txt{flex:1;line-height:1.4}
-.ev-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:16px;padding:0}
-.ev-del:hover{color:var(--red)}
+.ev-del{background:none;border:none;color:#ccc;cursor:pointer;font-size:18px;padding:0 4px}
 
-/* ── Report ── */
+/* Modal */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.mb{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px;max-height:85vh;overflow-y:auto}
+.mt{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center}
+.mc{margin-left:auto;background:none;border:none;font-size:26px;cursor:pointer;color:var(--muted);line-height:1}
+.psg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.psb{padding:12px 6px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
+.psb.sel{background:var(--g);color:#fff;border-color:var(--g)}
+.psb.na{opacity:.3;pointer-events:none}
+.psb.none-opt{color:var(--muted);font-style:italic;font-size:12px}
+.conf{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px}
+.conf:disabled{opacity:.4;cursor:default}
+.modal-section{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 4px}
+
+/* Report */
 .pt-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
 .pt-name{width:82px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pt-wrap{flex:1;background:#e0e0e0;border-radius:3px;height:10px}
 .pt-bar{background:var(--g);height:10px;border-radius:3px}
 .pt-min{width:40px;text-align:right;color:var(--muted);font-size:11px}
 .stat-table{width:100%;border-collapse:collapse;font-size:13px}
-.stat-table th{background:var(--g);color:#fff;padding:8px 9px;text-align:left;font-size:11px;letter-spacing:.4px}
-.stat-table td{padding:8px 9px;border-bottom:1px solid var(--border)}
+.stat-table th{background:var(--g);color:#fff;padding:9px;text-align:left;font-size:11px;letter-spacing:.4px}
+.stat-table td{padding:9px;border-bottom:1px solid var(--border)}
 .stat-table tr:nth-child(even) td{background:var(--gl)}
 .hl{font-weight:700;color:var(--g)}
 
-/* ── Modal ── */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-.mb{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:18px;max-height:82vh;overflow-y:auto}
-.mt{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center}
-.mc{margin-left:auto;background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1}
-.psg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}
-.psb{padding:10px 4px;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-size:12px;font-weight:700;cursor:pointer;text-align:center}
-.psb.sel{background:var(--g);color:#fff;border-color:var(--g)}
-.psb.na{opacity:.3;pointer-events:none}
-.psb.none-opt{color:var(--muted);font-style:italic}
-.conf{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:12px}
-.conf:disabled{opacity:.4;cursor:default}
-
-/* ── Buttons ── */
 .btn{padding:9px 16px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}
 .btn-p{background:var(--g);color:#fff}
 .btn-s{background:var(--gl);color:var(--g)}
 .btn-sm{padding:5px 10px;font-size:11px}
-
-/* ── Float save ── */
 .float{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;z-index:50}
 .float .btn{flex:1}
-
-/* ── Config warning ── */
 .cfg-warn{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:12px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;line-height:1.5}
-.cfg-warn strong{display:block;margin-bottom:4px}
 
 @media print{
   @page{size:landscape;margin:7mm}
-  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap{display:none!important}
+  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint{display:none!important}
   .hd{position:static;box-shadow:none;padding:6px 10px}
   .hd h1{font-size:13px}
   .content{padding:6px 8px 0}
-  .pitch{height:255px}
+  .pitch{height:260px}
   .chip{font-size:9px;padding:3px 6px;min-width:40px}
   .bslot .chip{font-size:9px}
   .bench{padding:5px 7px}
   .bslots{gap:3px}
   .ptag{display:none}
-  .half-tabs{display:none}
+  .half-tabs,.sub-for-lbl{display:none}
   body{background:#fff}
 }
 </style>
@@ -184,9 +183,7 @@ textarea.fi{min-height:78px;resize:vertical}
 <div id="modal"></div>
 <script>
 // ══════════════════════════════════════════════════════════════════════
-//  FIREBASE CONFIG
-//  After creating your Firebase project, replace every value below.
-//  Instructions in the README that came with this file.
+//  FIREBASE CONFIG — replace all REPLACE_ME values
 // ══════════════════════════════════════════════════════════════════════
 const FB_CFG = {
   apiKey:            "AIzaSyCrwLromkXbrehqXm_WxVXX8kV0RhoRvfM",
@@ -196,6 +193,7 @@ const FB_CFG = {
   storageBucket:     "celticgermany2026.firebasestorage.app",
   messagingSenderId: "389662354605",
   appId:             "1:389662354605:web:bdb94aff43b9054b7b6a24"
+
 };
 // ══════════════════════════════════════════════════════════════════════
 
@@ -208,8 +206,8 @@ const PLAYERS = [
 const POS = [
   {id:'fwL',tag:'LW',l:18,t:11},{id:'fwC',tag:'ST',l:50,t:8},{id:'fwR',tag:'RW',l:82,t:11},
   {id:'cmL',tag:'CM',l:22,t:35},{id:'cmC',tag:'CM',l:50,t:32},{id:'cmR',tag:'CM',l:78,t:35},
-  {id:'fbL',tag:'LB',l:9, t:61},{id:'cbL',tag:'CB',l:34,t:58},{id:'cbR',tag:'CB',l:66,t:58},
-  {id:'fbR',tag:'RB',l:91,t:61},{id:'gk', tag:'GK',l:50,t:87},
+  {id:'fbL',tag:'LB',l:9, t:62},{id:'cbL',tag:'CB',l:34,t:59},{id:'cbR',tag:'CB',l:66,t:59},
+  {id:'fbR',tag:'RB',l:91,t:62},{id:'gk', tag:'GK',l:50,t:88},
 ];
 
 const GAMES = [
@@ -229,20 +227,21 @@ const HALF = 35;
 const G1_DEFAULT = {
   h1:{fwL:'Yael',fwC:'Jonathan',fwR:'Aarav',cmL:'Ryu',cmC:'Nicholas',cmR:'Thomas',
       fbL:'Anish',cbL:'Siddharth',cbR:'Jayce',fbR:'Adrian',gk:'Maxim',
-      bench:['Vincent','Liam','Wyatt','Johan','Brandon','Daniel']},
+      bench:['Vincent','Liam','Wyatt','Johan','Brandon','Daniel'],
+      benchFor:['Adrian','Anish','Ryu','Jayce','Aarav','Jonathan']},
   h2:{fwL:'Yael',fwC:'Jonathan',fwR:'Brandon',cmL:'Wyatt',cmC:'Daniel',cmR:'Jayce',
       fbL:'Liam',cbL:'Siddharth',cbR:'Johan',fbR:'Vincent',gk:'Maxim',
-      bench:['Ryu','Nicholas','Thomas','Anish','Adrian','Aarav']}
+      bench:['Ryu','Nicholas','Thomas','Anish','Adrian','Aarav'],
+      benchFor:['Jayce','Wyatt','Daniel','Liam','Vincent','Brandon']}
 };
 
 // ── State ──────────────────────────────────────────────────────────────
 let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
-  gameData:{}, allGames:{}, drag:null, modal:null,
-  formDirty:false,
+  gameData:{}, allGames:{}, selected:null, modal:null,
 };
 
-let db=null, gameRef=null, allRef=null;
+let db=null, gameRef=null;
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
 // ── Firebase ───────────────────────────────────────────────────────────
@@ -251,8 +250,7 @@ function initFB() {
   try {
     firebase.initializeApp(FB_CFG);
     db = firebase.database();
-    allRef = db.ref('germany-u14/games');
-    allRef.on('value', s => {
+    db.ref('germany-u14/games').on('value', s => {
       S.allGames = s.val() || {};
       if (S.view==='season'||S.view==='stats') render();
     });
@@ -270,63 +268,45 @@ function listenGame(id) {
   });
 }
 
-function dbSet(path, val) {
-  if (!db) return;
-  db.ref('germany-u14/games/'+path).set(val);
-}
-
-function dbUpdate(path, val) {
-  if (!db) return;
-  db.ref('germany-u14/games/'+path).update(val);
-}
-
-function dbPush(path, val) {
-  if (!db) return db;
-  return db.ref('germany-u14/games/'+path).push(val);
-}
-
-function dbRemove(path) {
-  if (!db) return;
-  db.ref('germany-u14/games/'+path).remove();
-}
+function dbSet(path,val){ if(db) db.ref('germany-u14/games/'+path).set(val); }
+function dbUpdate(path,val){ if(db) db.ref('germany-u14/games/'+path).update(val); }
+function dbPush(path,val){ if(db) return db.ref('germany-u14/games/'+path).push(val); }
+function dbRemove(path){ if(db) db.ref('germany-u14/games/'+path).remove(); }
 
 // ── Navigation ─────────────────────────────────────────────────────────
-window.goTo = function(view, gid, tab) {
+window.goTo = function(view,gid,tab) {
   S.view=view; S.gameId=gid||null; S.tab=tab||'setup';
-  S.lhalf='h1'; S.liveHalf=1; S.modal=null; S.formDirty=false;
-  if (gid) { listenGame(gid); S.gameData = S.allGames[gid]||{}; }
+  S.lhalf='h1'; S.liveHalf=1; S.modal=null; S.selected=null;
+  if(gid){ listenGame(gid); S.gameData=S.allGames[gid]||{}; }
   render(); window.scrollTo(0,0);
 };
-window.setTab = function(t) { S.tab=t; render(); };
-window.setLH  = function(h) { S.lhalf=h; renderApp(); };
-window.setLiveHalf = function(h) { S.liveHalf=h; renderApp(); };
-window.closeModal = function() { S.modal=null; renderApp(); };
+window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
+window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
+window.setLiveHalf = function(h){ S.liveHalf=h; renderApp(); };
+window.closeModal = function(){ S.modal=null; renderApp(); };
 
-// ── Master render ──────────────────────────────────────────────────────
 function render() {
-  const app = document.getElementById('app');
+  const app=document.getElementById('app');
   app.innerHTML='';
-  if (S.view==='season') renderSeason(app);
-  else if (S.view==='game') renderGame(app);
-  else if (S.view==='stats') renderStats(app);
-  const md = document.getElementById('modal');
+  if(S.view==='season') renderSeason(app);
+  else if(S.view==='game') renderGame(app);
+  else if(S.view==='stats') renderStats(app);
+  const md=document.getElementById('modal');
   md.innerHTML='';
-  if (S.modal) renderModal(md);
+  if(S.modal) renderModal(md);
 }
-
-function renderApp() { render(); } // alias
+function renderApp(){ render(); }
 
 // ── Season ─────────────────────────────────────────────────────────────
 function renderSeason(a) {
-  a.innerHTML = `
+  a.innerHTML=`
   <div class="hd no-print">
     <h1>Germany U14 · Spring 2026</h1>
     <button class="hd-btn" onclick="goTo('stats')">Season Stats</button>
   </div>
   <div class="content">
-    ${!FB_OK ? `<div class="cfg-warn"><strong>⚠ Firebase not configured</strong>
-      Open this file in a text editor and replace the REPLACE_ME values in FB_CFG at the top of the script.
-      See the setup guide for step-by-step instructions.</div>` : ''}
+    ${!FB_OK?`<div class="cfg-warn"><strong>⚠ Firebase not configured</strong>
+      Replace the REPLACE_ME values in FB_CFG at the top of the script.</div>`:''}
     <div class="sec-label">Regular Season</div>
     <div class="game-grid">${GAMES.filter(g=>g.type==='regular').map(gameCard).join('')}</div>
     <div class="sec-label" style="margin-top:18px">Tournament</div>
@@ -335,10 +315,10 @@ function renderSeason(a) {
 }
 
 function gameCard(g) {
-  const d = S.allGames[g.id]||{};
-  const st = d.meta?.status||'upcoming';
-  const opp = d.meta?.opponent||'TBD';
-  const dt = d.meta?.date||'';
+  const d=S.allGames[g.id]||{};
+  const st=d.meta?.status||'upcoming';
+  const opp=d.meta?.opponent||'TBD';
+  const dt=d.meta?.date||'';
   return `<div class="gc ${st}" onclick="goTo('game','${g.id}')">
     <div class="gnum">${g.label}</div>
     <div class="opp">${opp}</div>
@@ -352,10 +332,9 @@ function gameCard(g) {
 
 // ── Game view ──────────────────────────────────────────────────────────
 function renderGame(a) {
-  const gdef = GAMES.find(g=>g.id===S.gameId)||{};
-  const gd = S.gameData;
-  const opp = gd.meta?.opponent||gdef.label;
-  a.innerHTML = `
+  const gdef=GAMES.find(g=>g.id===S.gameId)||{};
+  const opp=S.gameData.meta?.opponent||gdef.label;
+  a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
     <h1>${opp}</h1>
@@ -365,22 +344,19 @@ function renderGame(a) {
       <button class="tab ${S.tab===t?'on':''}" onclick="setTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
   </div>
   <div class="content" id="tab-content"></div>`;
-
-  const tc = document.getElementById('tab-content');
-  if (S.tab==='setup')   renderSetup(tc);
-  if (S.tab==='lineup')  renderLineup(tc);
-  if (S.tab==='live')    renderLive(tc);
-  if (S.tab==='report')  renderReport(tc);
+  const tc=document.getElementById('tab-content');
+  if(S.tab==='setup')  renderSetup(tc);
+  if(S.tab==='lineup') renderLineup(tc);
+  if(S.tab==='live')   renderLive(tc);
+  if(S.tab==='report') renderReport(tc);
 }
 
-// ── Setup tab ──────────────────────────────────────────────────────────
+// ── Setup ──────────────────────────────────────────────────────────────
 function renderSetup(c) {
-  const gd = S.gameData;
-  const m = gd.meta||{};
-  const av = gd.availability||{};
-  const status = m.status||'upcoming';
-
-  c.innerHTML = `
+  const m=S.gameData.meta||{};
+  const av=S.gameData.availability||{};
+  const status=m.status||'upcoming';
+  c.innerHTML=`
   <div class="card">
     <div class="card-title">Game Info</div>
     <div class="fg"><label class="fl">Opponent</label>
@@ -389,7 +365,7 @@ function renderSetup(c) {
       <div class="fg"><label class="fl">Date</label>
         <input class="fi" id="inp-date" type="date" value="${m.date||''}"></div>
       <div class="fg"><label class="fl">Location</label>
-        <input class="fi" id="inp-loc" placeholder="Field name" value="${m.location||''}"></div>
+        <input class="fi" id="inp-loc" placeholder="Field" value="${m.location||''}"></div>
     </div>
     <div class="fg"><label class="fl">Status</label>
       <div class="sbg">
@@ -401,14 +377,14 @@ function renderSetup(c) {
     <div class="card-title">Player Availability — tap to toggle</div>
     <div class="av-grid">
       ${PLAYERS.map(p=>{
-        const out = av[p]===false;
+        const out=av[p]===false;
         return `<div class="av ${out?'out':'in'}" onclick="toggleAv('${p}')">${p}</div>`;
       }).join('')}
     </div>
   </div>
   <div class="card">
     <div class="card-title">Coach Notes</div>
-    <textarea class="fi" id="inp-notes" placeholder="Notes about this game, opponent, tactics…">${m.notes||''}</textarea>
+    <textarea class="fi" id="inp-notes" placeholder="Tactics, opponent notes…">${m.notes||''}</textarea>
   </div>
   <div class="float no-print">
     <button class="btn btn-s" onclick="goTo('season')">Back</button>
@@ -416,46 +392,37 @@ function renderSetup(c) {
   </div>`;
 }
 
-window.saveSetup = function() {
-  const opp  = document.getElementById('inp-opp')?.value||'';
-  const date = document.getElementById('inp-date')?.value||'';
-  const loc  = document.getElementById('inp-loc')?.value||'';
-  const notes= document.getElementById('inp-notes')?.value||'';
-  const cur  = S.gameData.meta||{};
-  dbUpdate(`${S.gameId}/meta`, {
-    opponent:opp, date, location:loc, notes,
-    status: cur.status||'upcoming'
-  });
-  S.gameData.meta = {...cur, opponent:opp, date, location:loc, notes};
-  S.allGames[S.gameId] = S.gameData;
+window.saveSetup=function(){
+  const opp=document.getElementById('inp-opp')?.value||'';
+  const date=document.getElementById('inp-date')?.value||'';
+  const loc=document.getElementById('inp-loc')?.value||'';
+  const notes=document.getElementById('inp-notes')?.value||'';
+  const cur=S.gameData.meta||{};
+  dbUpdate(`${S.gameId}/meta`,{opponent:opp,date,location:loc,notes,status:cur.status||'upcoming'});
+  S.gameData.meta={...cur,opponent:opp,date,location:loc,notes};
+  S.allGames[S.gameId]=S.gameData;
 };
-
-window.setStatus = function(st) {
-  const cur = S.gameData.meta||{};
-  S.gameData.meta = {...cur, status:st};
+window.setStatus=function(st){
+  const cur=S.gameData.meta||{};
+  S.gameData.meta={...cur,status:st};
   dbUpdate(`${S.gameId}/meta`,{status:st});
   renderApp();
 };
-
-window.toggleAv = function(p) {
-  const cur = S.gameData.availability||{};
-  const nowOut = cur[p]===false;
-  const upd = {...cur, [p]: nowOut ? true : false};
-  S.gameData.availability = upd;
+window.toggleAv=function(p){
+  const cur=S.gameData.availability||{};
+  const upd={...cur,[p]:cur[p]===false?true:false};
+  S.gameData.availability=upd;
   dbSet(`${S.gameId}/availability`,upd);
   renderApp();
 };
 
-// ── Lineup tab ─────────────────────────────────────────────────────────
+// ── Lineup ─────────────────────────────────────────────────────────────
 function renderLineup(c) {
-  const isG1 = S.gameId==='g1';
-  const stored = S.gameData.lineup||{};
-  if (isG1 && !stored.h1) {
-    // Pre-populate game 1
-    S.gameData.lineup = G1_DEFAULT;
-    dbSet(`${S.gameId}/lineup`, G1_DEFAULT);
+  if(S.gameId==='g1'&&!S.gameData.lineup?.h1){
+    S.gameData.lineup=G1_DEFAULT;
+    dbSet(`${S.gameId}/lineup`,G1_DEFAULT);
   }
-  c.innerHTML = `
+  c.innerHTML=`
     <div class="print-btn-wrap no-print">
       <button class="btn btn-s btn-sm" onclick="window.print()">🖨 Print Lineup</button>
     </div>
@@ -463,128 +430,179 @@ function renderLineup(c) {
       <button class="ht ${S.lhalf==='h1'?'on':''}" onclick="setLH('h1')">First Half</button>
       <button class="ht ${S.lhalf==='h2'?'on':''}" onclick="setLH('h2')">Second Half</button>
     </div>
+    <div id="swap-hint" class="swap-hint ${S.selected?'active':''}">
+      ${S.selected?'Now tap another player or slot to swap':'Tap any player to select, then tap another to swap'}
+    </div>
     <div id="pitch-wrap"></div>`;
   renderPitch(document.getElementById('pitch-wrap'));
 }
 
-function fieldPlayers(ln) {
-  return new Set(POS.map(p=>ln[p.id]).filter(Boolean));
-}
-
 function renderPitch(container) {
-  const ln = (S.gameData.lineup||{})[S.lhalf]||{};
-  const h1ln = (S.gameData.lineup||{}).h1||{};
-  const h1starts = fieldPlayers(h1ln);
+  const ln=(S.gameData.lineup||{})[S.lhalf]||{};
+  const h1ln=(S.gameData.lineup||{}).h1||{};
+  const h1starts=new Set(POS.map(p=>h1ln[p.id]).filter(Boolean));
   container.innerHTML='';
 
-  // Field
-  const pitch = document.createElement('div');
+  // Pitch
+  const pitch=document.createElement('div');
   pitch.className='pitch';
-  pitch.innerHTML=`<svg viewBox="0 0 300 370" preserveAspectRatio="none">
-    <rect x="1" y="1" w="298" h="368" fill="none" stroke="white" stroke-width="1.5" opacity=".4"/>
-    <line x1="0" y1="185" x2="300" y2="185" stroke="white" stroke-width="1" opacity=".25"/>
-    <circle cx="150" cy="185" r="36" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
-    <circle cx="150" cy="185" r="2" fill="white" opacity=".3"/>
-    <rect x="65" y="1" width="170" height="58" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
-    <rect x="100" y="1" width="100" height="22" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
-    <rect x="65" y="311" width="170" height="58" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
-    <rect x="100" y="347" width="100" height="22" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+  pitch.innerHTML=`<svg viewBox="0 0 300 390" preserveAspectRatio="none">
+    <rect x="1" y="1" width="298" height="388" fill="none" stroke="white" stroke-width="1.5" opacity=".4"/>
+    <line x1="0" y1="195" x2="300" y2="195" stroke="white" stroke-width="1" opacity=".25"/>
+    <circle cx="150" cy="195" r="36" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <circle cx="150" cy="195" r="2" fill="white" opacity=".3"/>
+    <rect x="65" y="1" width="170" height="60" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="100" y="1" width="100" height="23" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="65" y="329" width="170" height="60" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
+    <rect x="100" y="366" width="100" height="23" fill="none" stroke="white" stroke-width="1" opacity=".25"/>
   </svg>`;
 
-  POS.forEach(pos => {
-    const name = ln[pos.id]||'';
-    const isNew = S.lhalf==='h2' && name && !h1starts.has(name);
-    const slot = document.createElement('div');
-    slot.className='pslot';
+  // Tap on pitch background to deselect
+  pitch.addEventListener('click', e=>{
+    if(e.target===pitch||e.target.tagName==='svg'||e.target.tagName==='line'||e.target.tagName==='circle'||e.target.tagName==='rect'){
+      S.selected=null; refreshHint(); renderPitch(container);
+    }
+  });
+
+  POS.forEach(pos=>{
+    const name=ln[pos.id]||'';
+    const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot===pos.id;
+    const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
+    const slot=document.createElement('div'); slot.className='pslot';
     slot.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
-    const tag = document.createElement('div');
-    tag.className='ptag'; tag.textContent=pos.tag;
-    const dz = document.createElement('div');
-    dz.className='dz';
-    const chip = makeChip(name, S.lhalf, pos.id, pos.id==='gk', isNew);
-    dz.appendChild(chip);
-    addDrop(dz, S.lhalf, pos.id);
-    slot.appendChild(tag); slot.appendChild(dz);
+    const tag=document.createElement('div'); tag.className='ptag'; tag.textContent=pos.tag;
+    const chip=makeChip(name,S.lhalf,pos.id,pos.id==='gk',isNew,isSel,container);
+    slot.appendChild(tag); slot.appendChild(chip);
     pitch.appendChild(slot);
   });
   container.appendChild(pitch);
 
   // Bench
-  const bench = document.createElement('div');
-  bench.className='bench';
-  bench.innerHTML='<div class="blabel">Bench</div>';
-  const bs = document.createElement('div'); bs.className='bslots';
-  const bArr = ln.bench||['','','','','',''];
-  bArr.forEach((name,i) => {
-    const isNew = S.lhalf==='h2' && name && !h1starts.has(name);
-    const slot = document.createElement('div'); slot.className='bslot';
-    const dz = document.createElement('div'); dz.className='dz';
-    const chip = makeChip(name, S.lhalf, `b${i}`, false, isNew);
-    dz.appendChild(chip); addDrop(dz, S.lhalf, `b${i}`);
-    slot.appendChild(dz); bs.appendChild(slot);
+  const bench=document.createElement('div'); bench.className='bench';
+  bench.innerHTML='<div class="blabel">Bench — tap name to select · tap label below to set planned sub</div>';
+  const bs=document.createElement('div'); bs.className='bslots';
+  const bArr=ln.bench||['','','','','',''];
+  const bFor=ln.benchFor||[];
+
+  bArr.forEach((name,i)=>{
+    const isSel=S.selected&&S.selected.half===S.lhalf&&S.selected.slot==='b'+i;
+    const isNew=S.lhalf==='h2'&&name&&!h1starts.has(name);
+    const slot=document.createElement('div'); slot.className='bslot';
+    const chip=makeChip(name,S.lhalf,'b'+i,false,isNew,isSel,container);
+    slot.appendChild(chip);
+    // Sub-for label
+    const sf=document.createElement('div');
+    const forName=bFor[i]||'';
+    sf.className='sub-for-lbl'+(forName?' set':'');
+    sf.textContent=forName?`→ ${forName}`:'→ set sub';
+    sf.onclick=(e)=>{ e.stopPropagation(); showBenchForModal(i); };
+    slot.appendChild(sf);
+    bs.appendChild(slot);
   });
   bench.appendChild(bs);
   container.appendChild(bench);
 }
 
-function makeChip(name, half, slot, isGK, isNew) {
-  if (!name) {
-    const e=document.createElement('div'); e.className='epslot'; e.textContent='—'; return e;
+function makeChip(name,half,slot,isGK,isNew,isSel,pitchContainer) {
+  const isSwapTarget=S.selected&&!(S.selected.half===half&&S.selected.slot===slot);
+  if(!name){
+    const e=document.createElement('div');
+    e.className='epslot'+(isSwapTarget?' swap-target':'');
+    e.textContent=isSwapTarget?'swap here':'—';
+    e.onclick=()=>tapSlot(half,slot,pitchContainer);
+    return e;
   }
   const c=document.createElement('div');
-  c.className='chip'+(isGK?' gk':'')+(isNew?' new':'');
-  c.textContent=name; c.draggable=true;
-  c.addEventListener('dragstart',ev=>{
-    S.drag={half,slot};
-    requestAnimationFrame(()=>c.classList.add('drag'));
-    ev.dataTransfer.effectAllowed='move';
-  });
-  c.addEventListener('dragend',()=>{c.classList.remove('drag');S.drag=null;});
+  c.className='chip'+(isGK?' gk':'')+(isNew?' new':'')+(isSel?' sel':'');
+  c.textContent=name;
+  c.onclick=(e)=>{ e.stopPropagation(); tapSlot(half,slot,pitchContainer); };
   return c;
 }
 
-function addDrop(el, half, slot) {
-  el.addEventListener('dragover',ev=>{ev.preventDefault();el.classList.add('ov');});
-  el.addEventListener('dragleave',()=>el.classList.remove('ov'));
-  el.addEventListener('drop',ev=>{
-    ev.preventDefault(); el.classList.remove('ov');
-    if(!S.drag||(S.drag.half===half&&S.drag.slot===slot)) return;
-    swapPlayers(S.drag.half,S.drag.slot,half,slot);
-  });
+function tapSlot(half,slot,container) {
+  if(!S.selected){
+    S.selected={half,slot};
+    refreshHint();
+    renderPitch(container||document.getElementById('pitch-wrap'));
+  } else if(S.selected.half===half&&S.selected.slot===slot){
+    S.selected=null;
+    refreshHint();
+    renderPitch(container||document.getElementById('pitch-wrap'));
+  } else {
+    const src=S.selected; S.selected=null;
+    swapPlayers(src.half,src.slot,half,slot);
+  }
 }
 
-function getSlotPlayer(half, slot) {
+function refreshHint(){
+  const h=document.getElementById('swap-hint');
+  if(!h) return;
+  h.className='swap-hint'+(S.selected?' active':'');
+  h.textContent=S.selected?'Now tap another player or slot to swap':'Tap any player to select, then tap another to swap';
+}
+
+function getSlotPlayer(half,slot){
   const ln=(S.gameData.lineup||{})[half]||{};
-  if(slot[0]==='b') return (ln.bench||[])[+slot.slice(1)]||'';
-  return ln[slot]||'';
+  return slot[0]==='b'?(ln.bench||[])[+slot.slice(1)]||'':(ln[slot]||'');
 }
-
-function setSlotPlayer(half, slot, name) {
+function setSlotPlayer(half,slot,name){
   if(!S.gameData.lineup) S.gameData.lineup={};
   if(!S.gameData.lineup[half]) S.gameData.lineup[half]={bench:[]};
   if(slot[0]==='b'){
     if(!S.gameData.lineup[half].bench) S.gameData.lineup[half].bench=[];
     S.gameData.lineup[half].bench[+slot.slice(1)]=name;
-  } else {
-    S.gameData.lineup[half][slot]=name;
-  }
+  } else { S.gameData.lineup[half][slot]=name; }
 }
-
-function swapPlayers(sh,ss,dh,ds) {
-  const a=getSlotPlayer(sh,ss), b=getSlotPlayer(dh,ds);
+function swapPlayers(sh,ss,dh,ds){
+  const a=getSlotPlayer(sh,ss),b=getSlotPlayer(dh,ds);
   setSlotPlayer(sh,ss,b); setSlotPlayer(dh,ds,a);
   dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
   const pw=document.getElementById('pitch-wrap');
   if(pw) renderPitch(pw);
 }
 
-// ── Live tab ───────────────────────────────────────────────────────────
-function renderLive(c) {
-  const h = S.liveHalf;
-  const onField = currentOnField(h);
-  const events = sortedEvents();
-  const avail = S.gameData.availability||{};
+// ── Bench-for modal ────────────────────────────────────────────────────
+window.showBenchForModal=function(idx){
+  const ln=(S.gameData.lineup||{})[S.lhalf]||{};
+  const bench=ln.bench||[];
+  const onField=POS.map(p=>ln[p.id]).filter(Boolean);
+  S.modal={type:'benchFor',benchIdx:idx,benchName:bench[idx]||'Player',onField,selected:ln.benchFor?.[idx]||null};
+  renderApp();
+};
 
+function buildBenchForModal(box){
+  const m=S.modal;
+  box.innerHTML=`<div class="mt">${m.benchName} subs in for…<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Who do they replace?</div>
+    <div class="psg">
+      <button class="psb none-opt ${m.selected===''?'sel':''}" onclick="selBF('')">Clear</button>
+    </div>
+    <div class="psg">${m.onField.map(p=>`
+      <button class="psb ${m.selected===p?'sel':''}" onclick="selBF('${p}')">${p}</button>`).join('')}
+    </div>
+    <button class="conf" onclick="confirmBF()">Save</button>`;
+}
+
+window.selBF=function(name){
+  S.modal.selected=name;
+  renderModal(document.getElementById('modal'));
+};
+window.confirmBF=function(){
+  const m=S.modal;
+  if(!S.gameData.lineup) S.gameData.lineup={};
+  if(!S.gameData.lineup[S.lhalf]) S.gameData.lineup[S.lhalf]={};
+  const bFor=[...((S.gameData.lineup[S.lhalf].benchFor)||['','','','','',''])];
+  bFor[m.benchIdx]=m.selected||'';
+  S.gameData.lineup[S.lhalf].benchFor=bFor;
+  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
+  closeModal();
+};
+
+// ── Live ───────────────────────────────────────────────────────────────
+function renderLive(c){
+  const h=S.liveHalf;
+  const onField=currentOnField(h);
+  const events=sortedEvents();
   c.innerHTML=`
   <div class="half-sw no-print">
     <button class="hs ${h===1?'on':''}" onclick="setLiveHalf(1)">First Half</button>
@@ -602,12 +620,11 @@ function renderLive(c) {
     <div class="on-field">
       ${onField.map(p=>`
         <div class="of ${p==='Maxim'?'gk':''}">
-          ${p}
-          <button class="off-btn no-print" onclick="quickSub('${p}')" title="Sub off">×</button>
+          ${p}<button class="off-btn" onclick="quickSub('${p}')" title="Sub off">×</button>
         </div>`).join('')||'<span style="color:var(--muted);font-size:13px">Set lineup first</span>'}
     </div>
   </div>
-  <div class="act-row no-print">
+  <div class="act-row">
     <button class="act act-sub" onclick="showModal('sub')">↕ Sub</button>
     <button class="act act-goal" onclick="showModal('goal')">⚽ Goal</button>
     <button class="act act-note" onclick="showModal('note')">📝 Note</button>
@@ -621,294 +638,196 @@ function renderLive(c) {
   </div>`;
 }
 
-function currentOnField(half) {
-  const hk = `h${half}`;
-  const ln = (S.gameData.lineup||{})[hk]||{};
-  const onF = new Set(POS.map(p=>ln[p.id]).filter(Boolean));
-  const startMin = half===1?0:HALF;
-  const endMin   = half===1?HALF:HALF*2;
+function currentOnField(half){
+  const hk=`h${half}`;
+  const ln=(S.gameData.lineup||{})[hk]||{};
+  const onF=new Set(POS.map(p=>ln[p.id]).filter(Boolean));
+  const startMin=half===1?0:HALF, endMin=half===1?HALF:HALF*2;
   sortedEvents()
     .filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin)
     .forEach(e=>{ onF.delete(e.playerOff); if(e.playerOn) onF.add(e.playerOn); });
   return [...onF];
 }
 
-function sortedEvents() {
+function sortedEvents(){
   return Object.entries(S.gameData.events||{})
     .map(([id,e])=>({id,...e}))
     .sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
 }
 
-function evHtml(e) {
-  let icon='📋', txt='';
-  if(e.type==='sub'){
-    icon='↕';
-    txt=`<strong>${e.playerOn}</strong> on for <strong>${e.playerOff}</strong>`;
-  } else if(e.type==='goal'){
-    icon='⚽';
-    txt=`<strong>${e.scorer}</strong> scores${e.assistedBy?` (assist: ${e.assistedBy})`:''}`;
-  } else {
-    txt=e.text||'';
-  }
+function evHtml(e){
+  let icon='📋',txt='';
+  if(e.type==='sub'){icon='↕';txt=`<strong>${e.playerOn}</strong> on for <strong>${e.playerOff}</strong>`;}
+  else if(e.type==='goal'){icon='⚽';txt=`<strong>${e.scorer}</strong> scores${e.assistedBy?` (assist: ${e.assistedBy})`:''}`;  }
+  else{txt=e.text||'';}
   return `<div class="ev">
     <div class="ev-min">${e.minute}'</div>
     <div class="ev-ico">${icon}</div>
     <div class="ev-txt">${txt}</div>
-    <button class="ev-del no-print" onclick="delEvent('${e.id}')">×</button>
+    <button class="ev-del" onclick="delEvent('${e.id}')">×</button>
   </div>`;
 }
 
-window.delEvent = function(id) {
-  if(!confirm('Delete this event?')) return;
-  dbRemove(`${S.gameId}/events/${id}`);
-};
-
-window.quickSub = function(playerOff) {
-  S.modal = {type:'sub', playerOff, playerOn:null, minute:''};
-  renderApp();
-};
+window.delEvent=function(id){ if(confirm('Delete?')) dbRemove(`${S.gameId}/events/${id}`); };
+window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,minute:''}; renderApp(); };
+window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,scorer:null,assistedBy:null,minute:'',text:''}; renderApp(); };
+window.selectP=function(field,name){ S.modal[field]=name===S.modal[field]?null:name; renderModal(document.getElementById('modal')); };
+window.setModalMin=function(v){ S.modal.minute=v; };
+window.setModalText=function(v){ S.modal.text=v; };
 
 // ── Modals ─────────────────────────────────────────────────────────────
-window.showModal = function(type) {
-  S.modal = {type, playerOff:null, playerOn:null, scorer:null, assistedBy:null, minute:'', text:''};
-  renderApp();
-};
-
-window.selectP = function(field, name) {
-  S.modal[field]=name===S.modal[field]?null:name;
-  renderModal(document.getElementById('modal'));
-};
-
-window.setModalMin = function(v) { S.modal.minute=v; };
-window.setModalText= function(v) { S.modal.text=v; };
-
-function renderModal(md) {
-  const m = S.modal;
-  if (!m) return;
+function renderModal(md){
+  const m=S.modal; if(!m) return;
   md.innerHTML='';
   const ov=document.createElement('div'); ov.className='mo';
   const box=document.createElement('div'); box.className='mb';
-
-  if (m.type==='sub')  buildSubModal(box);
-  if (m.type==='goal') buildGoalModal(box);
-  if (m.type==='note') buildNoteModal(box);
-
+  if(m.type==='sub')      buildSubModal(box);
+  else if(m.type==='goal') buildGoalModal(box);
+  else if(m.type==='note') buildNoteModal(box);
+  else if(m.type==='benchFor') buildBenchForModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
   md.appendChild(ov);
 }
 
-function modalHeader(title) {
-  return `<div class="mt">${title}<button class="mc" onclick="closeModal()">×</button></div>`;
+function pGrid(field,list){
+  return `<div class="psg">${list.map(p=>`
+    <button class="psb ${S.modal[field]===p?'sel':''}" onclick="selectP('${field}','${p}')">${p}</button>`).join('')}</div>`;
 }
 
-function playerGrid(field, list, allow=null) {
-  return `<div class="psg">${list.map(p=>{
-    const sel = S.modal[field]===p;
-    const na  = allow && !allow.includes(p);
-    return `<button class="psb ${sel?'sel':''} ${na?'na':''}" onclick="selectP('${field}','${p}')">${p}</button>`;
-  }).join('')}</div>`;
-}
-
-function buildSubModal(box) {
-  const h = S.liveHalf;
-  const onF = currentOnField(h);
-  const hk  = `h${h}`;
-  const ln  = (S.gameData.lineup||{})[hk]||{};
-  const benchPlayers = (ln.bench||[]).filter(Boolean);
-  const avail = S.gameData.availability||{};
-  const allBench = PLAYERS.filter(p=>!onF.includes(p)&&avail[p]!==false);
-
-  const m = S.modal;
-  const canConfirm = m.playerOff && m.playerOn && m.minute!=='';
-  box.innerHTML = modalHeader('Substitution')
-    + `<label class="fl">Who comes OFF?</label>`
-    + playerGrid('playerOff', onF)
-    + `<label class="fl">Who comes ON?</label>`
-    + playerGrid('playerOn', allBench)
-    + `<div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
-       <input class="fi" type="number" min="0" max="70" placeholder="e.g. 22"
-        value="${m.minute}" oninput="setModalMin(this.value)"></div>
-       <button class="conf" ${canConfirm?'':'disabled'} onclick="confirmSub()">Confirm Substitution</button>`;
-}
-
-window.confirmSub = function() {
+function buildSubModal(box){
+  const h=S.liveHalf;
+  const onF=currentOnField(h);
+  const hk=`h${h}`;
+  const ln=(S.gameData.lineup||{})[hk]||{};
+  const avail=S.gameData.availability||{};
+  const allBench=PLAYERS.filter(p=>!onF.includes(p)&&avail[p]!==false);
   const m=S.modal;
-  if(!m.playerOff||!m.playerOn||m.minute==='') return;
-  dbPush(`${S.gameId}/events`, {
-    type:'sub', minute:+m.minute, half:S.liveHalf,
-    playerOff:m.playerOff, playerOn:m.playerOn, timestamp:Date.now()
-  });
+  const ok=m.playerOff&&m.playerOn&&m.minute!=='';
+  box.innerHTML=`<div class="mt">Substitution<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Who comes OFF?</div>${pGrid('playerOff',onF)}
+    <div class="modal-section">Who comes ON?</div>${pGrid('playerOn',allBench)}
+    <div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
+      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 22"
+       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <button class="conf" ${ok?'':'disabled'} onclick="confirmSub()">Confirm Sub</button>`;
+}
+window.confirmSub=function(){
+  const m=S.modal; if(!m.playerOff||!m.playerOn||m.minute==='') return;
+  dbPush(`${S.gameId}/events`,{type:'sub',minute:+m.minute,half:S.liveHalf,playerOff:m.playerOff,playerOn:m.playerOn,timestamp:Date.now()});
   closeModal();
 };
 
-function buildGoalModal(box) {
-  const h = S.liveHalf;
-  const onF = currentOnField(h);
-  const m = S.modal;
-  const canConfirm = m.scorer && m.minute!=='';
-  box.innerHTML = modalHeader('Goal')
-    + `<label class="fl">Who scored?</label>`
-    + playerGrid('scorer', onF)
-    + `<label class="fl">Assisted by? (optional)</label>`
-    + `<div class="psg"><button class="psb none-opt ${m.assistedBy===null&&m.scorer?'sel':''}"
-        onclick="selectP('assistedBy','__none__')">No assist</button></div>`
-    + playerGrid('assistedBy', onF.filter(p=>p!==m.scorer))
-    + `<div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
-       <input class="fi" type="number" min="0" max="70" placeholder="e.g. 18"
-        value="${m.minute}" oninput="setModalMin(this.value)"></div>
-       <button class="conf" ${canConfirm?'':'disabled'} onclick="confirmGoal()">Confirm Goal</button>`;
+function buildGoalModal(box){
+  const onF=currentOnField(S.liveHalf);
+  const m=S.modal; const ok=m.scorer&&m.minute!=='';
+  box.innerHTML=`<div class="mt">Goal<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Who scored?</div>${pGrid('scorer',onF)}
+    <div class="modal-section">Assisted by? (optional)</div>
+    <div class="psg"><button class="psb none-opt ${m.assistedBy===''?'sel':''}" onclick="selectP('assistedBy','')">No assist</button></div>
+    ${pGrid('assistedBy',onF.filter(p=>p!==m.scorer))}
+    <div class="fg" style="margin-top:10px"><label class="fl">Minute</label>
+      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 18"
+       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <button class="conf" ${ok?'':'disabled'} onclick="confirmGoal()">Confirm Goal</button>`;
 }
-
-window.selectP = function(field, name) {
-  if(name==='__none__') { S.modal[field]=null; }
-  else { S.modal[field]=name===S.modal[field]?null:name; }
-  renderModal(document.getElementById('modal'));
-};
-
-window.confirmGoal = function() {
-  const m=S.modal;
-  if(!m.scorer||m.minute==='') return;
-  dbPush(`${S.gameId}/events`,{
-    type:'goal', minute:+m.minute, half:S.liveHalf,
-    scorer:m.scorer, assistedBy:m.assistedBy||null, timestamp:Date.now()
-  });
+window.confirmGoal=function(){
+  const m=S.modal; if(!m.scorer||m.minute==='') return;
+  dbPush(`${S.gameId}/events`,{type:'goal',minute:+m.minute,half:S.liveHalf,scorer:m.scorer,assistedBy:m.assistedBy||null,timestamp:Date.now()});
   closeModal();
 };
 
-function buildNoteModal(box) {
-  const m=S.modal;
-  const canConfirm = m.text&&m.minute!=='';
-  box.innerHTML = modalHeader('Note')
-    + `<div class="fg"><label class="fl">Minute</label>
-       <input class="fi" type="number" min="0" max="70" placeholder="e.g. 30"
-        value="${m.minute}" oninput="setModalMin(this.value)"></div>
-       <div class="fg"><label class="fl">Note</label>
-       <textarea class="fi" placeholder="e.g. Formation change, press trigger…"
-        oninput="setModalText(this.value)">${m.text}</textarea></div>
-       <button class="conf" ${canConfirm?'':'disabled'} onclick="confirmNote()">Save Note</button>`;
+function buildNoteModal(box){
+  const m=S.modal; const ok=m.text&&m.minute!=='';
+  box.innerHTML=`<div class="mt">Note<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="fg"><label class="fl">Minute</label>
+      <input class="fi" type="number" min="0" max="70" placeholder="e.g. 30"
+       value="${m.minute}" oninput="setModalMin(this.value)"></div>
+    <div class="fg"><label class="fl">Note</label>
+      <textarea class="fi" placeholder="Formation change, press trigger…" oninput="setModalText(this.value)">${m.text}</textarea></div>
+    <button class="conf" ${ok?'':'disabled'} onclick="confirmNote()">Save Note</button>`;
 }
-
-window.confirmNote = function() {
-  const m=S.modal;
-  if(!m.text||m.minute==='') return;
-  dbPush(`${S.gameId}/events`,{
-    type:'note', minute:+m.minute, half:S.liveHalf,
-    text:m.text, timestamp:Date.now()
-  });
+window.confirmNote=function(){
+  const m=S.modal; if(!m.text||m.minute==='') return;
+  dbPush(`${S.gameId}/events`,{type:'note',minute:+m.minute,half:S.liveHalf,text:m.text,timestamp:Date.now()});
   closeModal();
 };
 
-// ── Report tab ─────────────────────────────────────────────────────────
-function renderReport(c) {
+// ── Report ─────────────────────────────────────────────────────────────
+function renderReport(c){
   const gd=S.gameData;
   const pt=computePT(gd);
   const events=sortedEvents();
   const goals=events.filter(e=>e.type==='goal');
   const maxPT=Math.max(...Object.values(pt),1);
-
-  const ptRows=PLAYERS
-    .map(p=>({p,m:pt[p]||0}))
-    .filter(x=>x.m>0)
-    .sort((a,b)=>b.m-a.m);
-
+  const ptRows=PLAYERS.map(p=>({p,m:pt[p]||0})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m);
   c.innerHTML=`
   <div class="card">
     <div class="card-title">Playing Time</div>
-    ${ptRows.map(({p,m})=>`
-      <div class="pt-row">
-        <div class="pt-name">${p}</div>
-        <div class="pt-wrap"><div class="pt-bar" style="width:${Math.round(m/maxPT*100)}%"></div></div>
-        <div class="pt-min">${m} min</div>
-      </div>`).join('')}
-    ${ptRows.length===0?'<div style="color:var(--muted);font-size:13px">Complete lineup + live tracking first</div>':''}
+    ${ptRows.map(({p,m})=>`<div class="pt-row">
+      <div class="pt-name">${p}</div>
+      <div class="pt-wrap"><div class="pt-bar" style="width:${Math.round(m/maxPT*100)}%"></div></div>
+      <div class="pt-min">${m} min</div></div>`).join('')}
+    ${!ptRows.length?'<div style="color:var(--muted);font-size:13px">Complete lineup and live tracking to see times</div>':''}
   </div>
   <div class="card">
-    <div class="card-title">Goals &amp; Assists</div>
-    ${buildGoalTable(goals)}
+    <div class="card-title">Goals &amp; Assists</div>${buildGoalTable(goals)}
   </div>
   <div class="card">
     <div class="card-title">Full Match Log</div>
     <div class="ev-log">
-      ${events.length===0?'<div style="color:var(--muted);font-size:13px">No events recorded</div>':''}
+      ${!events.length?'<div style="color:var(--muted);font-size:13px">No events recorded</div>':''}
       ${events.map(e=>evHtml(e)).join('')}
     </div>
   </div>`;
 }
 
-function buildGoalTable(goals) {
+function buildGoalTable(goals){
   if(!goals.length) return '<div style="color:var(--muted);font-size:13px">No goals recorded</div>';
   const stats={};
   goals.forEach(g=>{
     if(!stats[g.scorer]) stats[g.scorer]={g:0,a:0};
     stats[g.scorer].g++;
-    if(g.assistedBy) {
-      if(!stats[g.assistedBy]) stats[g.assistedBy]={g:0,a:0};
-      stats[g.assistedBy].a++;
-    }
+    if(g.assistedBy){if(!stats[g.assistedBy]) stats[g.assistedBy]={g:0,a:0}; stats[g.assistedBy].a++;}
   });
-  const rows=Object.entries(stats).sort((a,b)=>b[1].g-a[1].g||b[1].a-a[1].a);
-  return `<table class="stat-table">
-    <thead><tr><th>Player</th><th>Goals</th><th>Assists</th></tr></thead>
-    <tbody>${rows.map(([p,s])=>`
+  return `<table class="stat-table"><thead><tr><th>Player</th><th>Goals</th><th>Assists</th></tr></thead>
+    <tbody>${Object.entries(stats).sort((a,b)=>b[1].g-a[1].g).map(([p,s])=>`
       <tr><td>${p}</td><td class="${s.g?'hl':''}">${s.g}</td><td class="${s.a?'hl':''}">${s.a}</td></tr>`).join('')}
     </tbody></table>`;
 }
 
-// ── Playing time computation ────────────────────────────────────────────
-function computePT(gd) {
-  const pt={};
-  PLAYERS.forEach(p=>pt[p]=0);
+// ── Playing time ───────────────────────────────────────────────────────
+function computePT(gd){
+  const pt={}; PLAYERS.forEach(p=>pt[p]=0);
   const ln=gd.lineup||{};
   const events=Object.values(gd.events||{}).sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
-
   ['h1','h2'].forEach(hk=>{
-    const half=hk==='h1'?1:2;
-    const startMin=hk==='h1'?0:HALF;
-    const endMin  =hk==='h1'?HALF:HALF*2;
-    const hln=ln[hk]||{};
-    const onF={};
+    const startMin=hk==='h1'?0:HALF, endMin=hk==='h1'?HALF:HALF*2;
+    const hln=ln[hk]||{}, onF={};
     POS.forEach(pos=>{ if(hln[pos.id]) onF[hln[pos.id]]=startMin; });
-
-    events
-      .filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin)
-      .forEach(e=>{
-        if(e.playerOff&&onF[e.playerOff]!==undefined){
-          pt[e.playerOff]=(pt[e.playerOff]||0)+(e.minute-onF[e.playerOff]);
-          delete onF[e.playerOff];
-        }
-        if(e.playerOn) onF[e.playerOn]=e.minute;
-      });
-
-    Object.entries(onF).forEach(([p,t])=>{
-      pt[p]=(pt[p]||0)+(endMin-t);
+    events.filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin).forEach(e=>{
+      if(e.playerOff&&onF[e.playerOff]!==undefined){pt[e.playerOff]+=(e.minute-onF[e.playerOff]); delete onF[e.playerOff];}
+      if(e.playerOn) onF[e.playerOn]=e.minute;
     });
+    Object.entries(onF).forEach(([p,t])=>{ pt[p]+=(endMin-t); });
   });
   return pt;
 }
 
 // ── Season stats ───────────────────────────────────────────────────────
-function renderStats(a) {
-  const totPT={}, totG={}, totA={}, gamesP={};
-  PLAYERS.forEach(p=>{ totPT[p]=0; totG[p]=0; totA[p]=0; gamesP[p]=0; });
-
-  Object.entries(S.allGames).forEach(([gid,gd])=>{
+function renderStats(a){
+  const totPT={},totG={},totA={},gamesP={};
+  PLAYERS.forEach(p=>{ totPT[p]=0;totG[p]=0;totA[p]=0;gamesP[p]=0; });
+  Object.values(S.allGames).forEach(gd=>{
     if(!gd) return;
     const pt=computePT(gd);
-    const events=Object.values(gd.events||{});
-    PLAYERS.forEach(p=>{
-      if(pt[p]>0){ totPT[p]+=pt[p]; gamesP[p]++; }
-    });
-    events.filter(e=>e.type==='goal').forEach(e=>{
+    PLAYERS.forEach(p=>{ if(pt[p]>0){ totPT[p]+=pt[p]; gamesP[p]++; } });
+    Object.values(gd.events||{}).filter(e=>e.type==='goal').forEach(e=>{
       if(e.scorer) totG[e.scorer]=(totG[e.scorer]||0)+1;
       if(e.assistedBy) totA[e.assistedBy]=(totA[e.assistedBy]||0)+1;
     });
   });
-
-  const rows=PLAYERS
-    .map(p=>({p,min:totPT[p],g:totG[p],a:totA[p],gp:gamesP[p]}))
-    .sort((a,b)=>b.min-a.min);
-
+  const rows=PLAYERS.map(p=>({p,min:totPT[p],g:totG[p],a:totA[p],gp:gamesP[p]})).sort((a,b)=>b.min-a.min);
   a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
@@ -919,21 +838,16 @@ function renderStats(a) {
       <div class="card-title">Spring 2026 — All Players</div>
       <table class="stat-table">
         <thead><tr><th>Player</th><th>Games</th><th>Minutes</th><th>Goals</th><th>Assists</th></tr></thead>
-        <tbody>${rows.map(r=>`
-          <tr>
-            <td><strong>${r.p}</strong></td>
-            <td>${r.gp}</td>
-            <td class="${r.min>0?'hl':''}">${r.min}</td>
-            <td class="${r.g>0?'hl':''}">${r.g}</td>
-            <td class="${r.a>0?'hl':''}">${r.a}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
+        <tbody>${rows.map(r=>`<tr>
+          <td><strong>${r.p}</strong></td><td>${r.gp}</td>
+          <td class="${r.min>0?'hl':''}">${r.min}</td>
+          <td class="${r.g>0?'hl':''}">${r.g}</td>
+          <td class="${r.a>0?'hl':''}">${r.a}</td></tr>`).join('')}
+        </tbody></table>
     </div>
   </div>`;
 }
 
-// ── Boot ───────────────────────────────────────────────────────────────
 initFB();
 </script>
 </body>
