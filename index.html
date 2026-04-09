@@ -2,13 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#1a6b2f">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Germany U14 · Season Manager</title>
+
+<!-- PWA: full-screen app mode -->
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Team Manager">
-<link rel="manifest" id="pwa-manifest">
-<title>Germany U14 · Season Manager</title>
+<meta name="application-name" content="Team Manager">
+<meta name="theme-color" content="#1a6b2f">
+<meta name="description" content="Season lineup, live tracking and stats manager">
+
+<!-- PWA manifest (inline so no separate file needed) -->
+<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Team%20Season%20Manager%22%2C%22short_name%22%3A%22Team%20Mgr%22%2C%22description%22%3A%22Lineup%2C%20live%20tracking%20and%20stats%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%231a6b2f%22%2C%22theme_color%22%3A%22%231a6b2f%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%252060%252060%2527%253E%253Crect%2520width%3D%252760%2527%2520height%3D%252760%2527%2520rx%3D%252712%2527%2520fill%3D%2527%25231a6b2f%2527%2F%253E%253Ctext%2520x%3D%252730%2527%2520y%3D%252742%2527%2520text-anchor%3D%2527middle%2527%2520font-size%3D%252732%2527%253E%25E2%259A%25BD%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
+<!-- Apple touch icon (soccer ball on green) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><rect width='60' height='60' rx='12' fill='%231a6b2f'/><text x='30' y='42' text-anchor='middle' font-size='32'>⚽</text></svg>">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
@@ -152,7 +162,6 @@ textarea.fi{min-height:78px;resize:vertical}
 .act{flex:1;padding:14px 6px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-align:center}
 .act-sub{background:#2980b9;color:#fff}
 .act-goal{background:#27ae60;color:#fff}
-.act-switch{background:#e67e22;color:#fff}
 .act-note{background:#8e44ad;color:#fff}
 .ev-log{}
 .ev{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
@@ -286,24 +295,19 @@ textarea.fi{min-height:78px;resize:vertical}
 .bt-grid .sumrow td{background:var(--gd)!important;color:#fff;font-weight:700}
 .season-tag-pill{display:inline-block;background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin:2px}
 @media print{
-  @page{size:landscape;margin:8mm}
-  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint,.formation-picker,.half-tabs,.act-row,.clock-bar,.live-bench-row,.score-card button,.ev-del{display:none!important}
-  body{background:#fff;padding:0}
-  .hd{position:static;box-shadow:none;padding:6px 10px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:landscape;margin:7mm}
+  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint{display:none!important}
+  .hd{position:static;box-shadow:none;padding:6px 10px}
   .hd h1{font-size:13px}
-  .content{padding:4px 8px 0;max-width:100%}
-  .pitch{height:220px}
-  .chip{font-size:8.5px;padding:3px 5px;min-width:36px}
-  .bslot .chip{font-size:8.5px}
-  .bench{padding:4px 6px}
+  .content{padding:6px 8px 0}
+  .pitch{height:260px}
+  .chip{font-size:9px;padding:3px 6px;min-width:40px}
+  .bslot .chip{font-size:9px}
+  .bench{padding:5px 7px}
   .bslots{gap:3px}
-  .ptag,.sub-for-lbl,.pool-wrap{display:none}
-  .card{border:1px solid #ccc;margin-bottom:8px;page-break-inside:avoid}
-  #print-report{display:block}
-  #print-report .card{break-inside:avoid}
-  .score-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .pt-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .stat-table th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ptag{display:none}
+  .half-tabs,.sub-for-lbl{display:none}
+  body{background:#fff}
 }
 </style>
 </head>
@@ -450,48 +454,7 @@ window.toggleClock=function(){
   }
   tickClock();
 };
-window.adjustClock=function(secs){
-  const h=S.liveHalf-1;
-  if(S.clock.running){
-    S.clock.elapsed[h]+=Math.floor((Date.now()-S.clock.startedAt)/1000)+secs;
-    S.clock.startedAt=Date.now();
-  } else {
-    S.clock.elapsed[h]=Math.max(0,S.clock.elapsed[h]+secs);
-  }
-  tickClock();
-};
-
-window.editClockDirect=function(){
-  const cur=clockDisplay();
-  const val=prompt('Set clock time (MM:SS):',cur);
-  if(!val) return;
-  const parts=val.split(':');
-  const secs=(+parts[0]||0)*60+(+parts[1]||0);
-  const h=S.liveHalf-1;
-  if(S.clock.running){ S.clock.startedAt=Date.now(); }
-  S.clock.elapsed[h]=secs;
-  tickClock();
-};
-
-window.endHalf=function(){
-  const h=S.liveHalf;
-  if(!confirm(`End Half ${h}?`)) return;
-  // Pause clock
-  const hi=h-1;
-  if(S.clock.running){
-    S.clock.elapsed[hi]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
-    S.clock.startedAt=null; S.clock.running=false;
-    clearInterval(clockInterval); clockInterval=null;
-  }
-  // Log end of half event
-  dbPush(`${S.gameId}/events`,{type:'note',minute:clockMinute(),half:h,text:`End of Half ${h}`,timestamp:Date.now()});
-  // Prompt switch to H2 if ending H1
-  if(h===1){
-    if(confirm('Switch to Half 2?')){ S.liveHalf=2; }
-  }
-  tickClock();
-  renderApp();
-};
+window.resetClock=function(){
   if(!confirm('Reset clock for this half?')) return;
   const h=S.liveHalf-1;
   S.clock.elapsed[h]=0; S.clock.startedAt=null; S.clock.running=false;
@@ -629,14 +592,10 @@ function gameCard(g) {
   const st=d.meta?.status||'upcoming';
   const opp=d.meta?.opponent||'TBD';
   const dt=d.meta?.date||'';
-  const notes=d.meta?.notes||'';
-  const notePreview=notes?notes.split('\n')[0].slice(0,40)+(notes.length>40?'…':''):'';
-  const scoreStr=(st==='complete'&&d.meta?.scoreUs!==undefined)?` · ${d.meta.scoreUs}–${d.meta.scoreThem}`:'';
   return `<div class="gc ${st}" onclick="goTo('game','${g.id}')">
     <div class="gnum">${g.label}</div>
-    <div class="opp">${opp}${scoreStr}</div>
+    <div class="opp">${opp}</div>
     <div class="gdate">${dt||'—'}</div>
-    ${notePreview?`<div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.3;font-style:italic">${notePreview}</div>`:''}
     <div style="margin-top:6px">
       <span class="sdot ${st}"></span>
       <span style="font-size:10px;color:var(--muted);text-transform:capitalize">${st}</span>
@@ -782,7 +741,6 @@ function renderLineup(c) {
     <div class="half-tabs no-print">
       <button class="ht ${S.lhalf==='h1'?'on':''}" onclick="setLH('h1')">First Half</button>
       <button class="ht ${S.lhalf==='h2'?'on':''}" onclick="setLH('h2')">Second Half</button>
-      ${S.lhalf==='h2'?`<button class="ht" style="background:#fff3cd;color:#856404;border:1px solid #ffc107;flex:0;padding:9px 10px;font-size:11px" onclick="copyH1toH2()">Copy H1 →</button>`:''}
     </div>
     <div class="formation-picker no-print">
       ${Object.values(FORMATIONS).map(f=>`
@@ -801,18 +759,6 @@ function renderLineup(c) {
     <div id="pitch-wrap"></div>`;
   renderPitch(document.getElementById('pitch-wrap'));
 }
-
-window.copyH1toH2=function(){
-  if(!confirm('Copy First Half lineup to Second Half? This will overwrite the current H2 lineup.')) return;
-  if(!S.gameData.lineup?.h1){ alert('No First Half lineup set yet.'); return; }
-  const h1=S.gameData.lineup.h1;
-  // Deep copy, preserving formation, clearing benchFor since sub plans may differ
-  const h2copy={...JSON.parse(JSON.stringify(h1)), benchFor:[]};
-  if(!S.gameData.lineup) S.gameData.lineup={};
-  S.gameData.lineup.h2=h2copy;
-  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
-  renderApp();
-};
 
 window.setFormation=function(f){
   if(!S.gameData.lineup) S.gameData.lineup={};
@@ -1082,22 +1028,12 @@ function renderLive(c){
       <button class="clock-hs ${h===1?'on':''}" onclick="setLiveHalf(1)">H1</button>
       <button class="clock-hs ${h===2?'on':''}" onclick="setLiveHalf(2)">H2</button>
     </div>
-    <div class="clock-display" onclick="editClockDirect()" title="Tap to edit time directly" style="cursor:pointer">
+    <div class="clock-display">
       <div class="clock-time" id="clock-disp">${clockDisplay()}</div>
-      <div class="clock-sub">Half ${h} · tap time to edit</div>
+      <div class="clock-sub">Half ${h} · tap ▶ to start</div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <div style="display:flex;gap:4px">
-        <button class="clock-btn reset" onclick="adjustClock(-60)" title="-1 min" style="font-size:11px;width:32px;height:28px;border-radius:4px">-1</button>
-        <button class="clock-btn reset" onclick="adjustClock(60)" title="+1 min" style="font-size:11px;width:32px;height:28px;border-radius:4px">+1</button>
-        <button class="clock-btn reset" onclick="adjustClock(300)" title="+5 min" style="font-size:11px;width:32px;height:28px;border-radius:4px">+5</button>
-      </div>
-      <div style="display:flex;gap:4px">
-        <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()" style="flex:1;width:auto;border-radius:4px;font-size:18px">${S.clock.running?'⏸':'▶'}</button>
-        <button class="clock-btn reset" onclick="resetClock()" title="Reset" style="width:32px;height:32px;border-radius:4px">↺</button>
-      </div>
-    </div>
-    <button onclick="endHalf()" style="background:#c0392b;color:#fff;border:none;border-radius:6px;padding:8px 6px;font-size:11px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center">End<br>Half</button>
+    <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()">${S.clock.running?'⏸':'▶'}</button>
+    <button class="clock-btn reset" onclick="resetClock()" title="Reset clock">↺</button>
   </div>
   ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
     ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
@@ -1106,7 +1042,6 @@ function renderLive(c){
   <div class="act-row">
     <button class="act act-sub" onclick="showModal('sub')">↕ Sub</button>
     <button class="act act-goal" onclick="showModal('goal')">⚽ Goal</button>
-    <button class="act act-switch" onclick="showModal('switch')">↔ Switch</button>
     <button class="act act-note" onclick="showModal('note')">📝 Note</button>
   </div>
   <div class="card">
@@ -1240,40 +1175,17 @@ function renderFinalScoreCard(){
       <div class="card-title" style="margin-bottom:0">Score</div>
       <span style="font-size:11px;color:var(--muted)">Goals logged auto-fill ${team} · edit freely</span>
     </div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px">
-      <div style="text-align:center;flex:1">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">${team}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-          <button onclick="adjustScore('us',-1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;font-size:18px;cursor:pointer;line-height:1">−</button>
-          <input class="score-in" id="score-us" type="number" min="0" max="20" value="${liveUs}" oninput="liveScoreChange()" style="width:58px">
-          <button onclick="adjustScore('us',1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--g);background:var(--gl);color:var(--g);font-size:18px;cursor:pointer;line-height:1">+</button>
-        </div>
-      </div>
-      <div style="font-size:24px;font-weight:700;color:var(--muted)">–</div>
-      <div style="text-align:center;flex:1">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">${opp}</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:6px">
-          <button onclick="adjustScore('them',-1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;font-size:18px;cursor:pointer;line-height:1">−</button>
-          <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()" style="width:58px">
-          <button onclick="adjustScore('them',1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #c0392b;background:#fde8e8;color:#c0392b;font-size:18px;cursor:pointer;line-height:1">+</button>
-        </div>
-      </div>
+    <div class="score-row">
+      <div class="score-team">${team}</div>
+      <input class="score-in" id="score-us" type="number" min="0" max="20" value="${liveUs}" oninput="liveScoreChange()">
+      <div class="score-sep">–</div>
+      <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
+      <div class="score-team" style="text-align:right">${opp}</div>
     </div>
     ${goalsScored>liveUs?`<div style="font-size:11px;color:#d97706;margin-bottom:8px">⚠ ${goalsScored} goal${goalsScored>1?'s':''} logged — own goal or scorer untracked?</div>`:''}
     <button class="btn btn-p" style="width:100%" onclick="saveFinalScore()">Submit Final Score &amp; Unlock Report</button>
   </div>`;
 }
-
-window.adjustScore=function(side,delta){
-  const cur=S.gameData.meta||{};
-  const usVal=+(cur.scoreUs||0), themVal=+(cur.scoreThem||0);
-  const upd=side==='us'
-    ?{scoreUs:Math.max(0,usVal+delta),scoreThem:themVal}
-    :{scoreUs:usVal,scoreThem:Math.max(0,themVal+delta)};
-  S.gameData.meta={...cur,...upd};
-  dbUpdate(`${S.gameId}/meta`,upd);
-  renderApp();
-};
 
 window.liveScoreChange=function(){
   const us=document.getElementById('score-us')?.value;
@@ -1349,7 +1261,6 @@ function renderModal(md){
   if(m.type==='sub')      buildSubModal(box);
   else if(m.type==='goal') buildGoalModal(box);
   else if(m.type==='note') buildNoteModal(box);
-  else if(m.type==='switch') buildSwitchModal(box);
   else if(m.type==='benchFor') buildBenchForModal(box);
   else if(m.type==='rosterEdit') buildRosterEditModal(box);
   ov.appendChild(box);
@@ -1427,40 +1338,6 @@ window.confirmSub=function(){
   closeModal();
 };
 
-function buildSwitchModal(box){
-  const h=S.liveHalf;
-  const onF=currentOnField(h);
-  const m=S.modal;
-  const ok=m.playerOff&&m.playerOn&&m.playerOff!==m.playerOn;
-  box.innerHTML=`
-    <div class="mt">Position Switch<button class="mc" onclick="closeModal()">×</button></div>
-    <div style="background:#fff3cd;border-radius:6px;padding:9px 11px;font-size:12px;color:#856404;margin-bottom:12px">
-      ↔ Swaps two players' positions on the pitch. No sub recorded in the log.
-    </div>
-    <div class="modal-section">Player A</div>${pGrid('playerOff',onF)}
-    <div class="modal-section">Player B (swap with)</div>${pGrid('playerOn',onF.filter(p=>p!==m.playerOff))}
-    <button class="conf" ${ok?'':'disabled'} onclick="confirmSwitch()">Confirm Position Switch</button>`;
-}
-window.confirmSwitch=function(){
-  const m=S.modal; if(!m.playerOff||!m.playerOn) return;
-  const h=S.liveHalf; const hk=`h${h}`;
-  // Find slots of both players in current live state
-  const ln=(S.gameData.lineup||{})[hk]||{};
-  const {playerSlot}=buildCurrentPositions(ln,h);
-  const slotA=playerSlot[m.playerOff], slotB=playerSlot[m.playerOn];
-  if(!slotA||!slotB){ alert('Could not determine positions — try using Sub instead.'); closeModal(); return; }
-  // Record as two back-to-back subs at same minute with a note
-  const min=clockMinute(), secs=clockElapsed(), ts=Date.now();
-  dbPush(`${S.gameId}/events`,{type:'note',minute:min,half:h,
-    text:`↔ Position switch: ${m.playerOff} (${slotA}) ↔ ${m.playerOn} (${slotB})`,timestamp:ts});
-  // Update lineup directly — swap slots
-  if(!S.gameData.lineup[hk]) S.gameData.lineup[hk]={};
-  S.gameData.lineup[hk][slotA]=m.playerOn;
-  S.gameData.lineup[hk][slotB]=m.playerOff;
-  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
-  closeModal();
-};
-
 function buildGoalModal(box){
   const onF=currentOnField(S.liveHalf);
   const m=S.modal; const ok=m.scorer;
@@ -1493,23 +1370,21 @@ window.confirmGoal=function(){
 };
 
 function buildNoteModal(box){
-  const m=S.modal;
+  const m=S.modal; const ok=m.text;
   box.innerHTML=`<div class="mt">Note<button class="mc" onclick="closeModal()">×</button></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
       <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
-      <input class="fi" id="note-min" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
-       value="${m.minute}">
+      <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
+       value="${m.minute}" oninput="setModalMin(this.value)">
       <span style="font-size:11px;color:var(--muted)">Auto-filled — edit if needed</span>
     </div>
     <div class="fg"><label class="fl">Note</label>
-      <textarea class="fi" id="note-text" placeholder="Formation change, press trigger, observation…" style="min-height:100px">${m.text||''}</textarea></div>
-    <button class="conf" onclick="confirmNote()">Save Note</button>`;
+      <textarea class="fi" placeholder="Formation change, press trigger…" oninput="setModalText(this.value)">${m.text}</textarea></div>
+    <button class="conf" ${ok?'':'disabled'} onclick="confirmNote()">Save Note</button>`;
 }
 window.confirmNote=function(){
-  const text=(document.getElementById('note-text')?.value||'').trim();
-  const min=document.getElementById('note-min')?.value;
-  if(!text){ alert('Please enter a note before saving.'); return; }
-  dbPush(`${S.gameId}/events`,{type:'note',minute:+min||0,half:S.liveHalf,text,timestamp:Date.now()});
+  const m=S.modal; if(!m.text) return;
+  dbPush(`${S.gameId}/events`,{type:'note',minute:+m.minute||0,half:S.liveHalf,text:m.text,timestamp:Date.now()});
   closeModal();
 };
 
@@ -1520,52 +1395,36 @@ function renderReport(c){
   const pt=computePT(gd);
   const events=sortedEvents();
   const goals=events.filter(e=>e.type==='goal');
-  const subs=events.filter(e=>e.type==='sub');
-  const notes=events.filter(e=>e.type==='note');
   const maxPT=Math.max(...Object.values(pt),1);
   const ptRows=players().map(p=>({p,m:pt[p]||0})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m);
   const opp=m.opponent||'Opponent';
-  const dateStr=m.date?new Date(m.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
   c.innerHTML=`
-  <div class="no-print" style="text-align:right;margin-bottom:10px">
-    <button class="btn btn-s btn-sm" onclick="window.print()">🖨 Print Match Report</button>
+  <div class="score-card" style="margin-bottom:14px">
+    <div class="final-badge">Final Score</div>
+    <div class="score-display">
+      <span class="score-num">${m.scoreUs}</span>
+      <span class="score-vs">–</span>
+      <span class="score-num">${m.scoreThem}</span>
+    </div>
+    <div class="score-teams"><span>${S.teamName}</span><span>${opp}</span></div>
   </div>
-  <div id="print-report">
-    <div class="score-card" style="margin-bottom:14px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${dateStr}${m.location?' · '+m.location:''}</div>
-      <div class="final-badge">Final Score</div>
-      <div class="score-display">
-        <span class="score-num">${m.scoreUs??'—'}</span>
-        <span class="score-vs">–</span>
-        <span class="score-num">${m.scoreThem??'—'}</span>
-      </div>
-      <div class="score-teams"><span>${S.teamName}</span><span>${opp}</span></div>
+  <div class="card">
+    <div class="card-title">Playing Time</div>
+    ${ptRows.map(({p,m})=>`<div class="pt-row">
+      <div class="pt-name">${p}</div>
+      <div class="pt-wrap"><div class="pt-bar" style="width:${Math.round(m/maxPT*100)}%"></div></div>
+      <div class="pt-min">${m} min</div></div>`).join('')}
+    ${!ptRows.length?'<div style="color:var(--muted);font-size:13px">Complete lineup and live tracking to see times</div>':''}
+  </div>
+  <div class="card">
+    <div class="card-title">Goals &amp; Assists</div>${buildGoalTable(goals)}
+  </div>
+  <div class="card">
+    <div class="card-title">Full Match Log</div>
+    <div class="ev-log">
+      ${!events.length?'<div style="color:var(--muted);font-size:13px">No events recorded</div>':''}
+      ${events.map(e=>evHtml(e)).join('')}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-      <div class="card">
-        <div class="card-title">Playing Time</div>
-        ${ptRows.map(({p,m})=>`<div class="pt-row">
-          <div class="pt-name">${p}</div>
-          <div class="pt-wrap"><div class="pt-bar" style="width:${Math.round(m/maxPT*100)}%"></div></div>
-          <div class="pt-min">${m} min</div></div>`).join('')}
-        ${!ptRows.length?'<div style="color:var(--muted);font-size:13px">No data</div>':''}
-      </div>
-      <div class="card">
-        <div class="card-title">Goals &amp; Assists</div>${buildGoalTable(goals)}
-        ${subs.length?`<div class="card-title" style="margin-top:12px">Substitutions</div>
-          ${subs.map(e=>`<div class="ev"><div class="ev-min">${e.minute}'</div><div class="ev-ico">↕</div>
-            <div class="ev-txt"><strong>${e.playerOn}</strong> on for <strong>${e.playerOff}</strong></div></div>`).join('')}`:''}
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Full Match Log</div>
-      <div class="ev-log">
-        ${!events.length?'<div style="color:var(--muted);font-size:13px">No events recorded</div>':''}
-        ${events.map(e=>evHtml(e)).join('')}
-      </div>
-    </div>
-    ${m.notes?`<div class="card"><div class="card-title">Coach Notes</div>
-      <div style="font-size:13px;white-space:pre-wrap;color:var(--text)">${m.notes}</div></div>`:''}
   </div>`;
 }
 
@@ -1948,46 +1807,40 @@ function renderBTGrid(c){
   </div>`;
 }
 
-// ── PWA Setup ──────────────────────────────────────────────────────────
-(function(){
-  // Inject manifest dynamically so it works from a single HTML file
-  const manifest={
-    name:'Team Manager',
-    short_name:'Team Mgr',
-    start_url:'./',
-    display:'standalone',
-    background_color:'#f0f4f1',
-    theme_color:'#1a6b2f',
-    icons:[
-      {src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a6b2f"/><text y=".9em" font-size="80" x="10">⚽</text></svg>',sizes:'any',type:'image/svg+xml'}
-    ]
-  };
-  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  document.getElementById('pwa-manifest').href=url;
-
-  // Register service worker for offline support
-  if('serviceWorker' in navigator){
-    const swCode=`
-const CACHE='team-mgr-v1';
-const ASSETS=['./'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
-self.addEventListener('fetch',e=>{
-  if(e.request.url.includes('firebase')||e.request.url.includes('gstatic')) return;
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-    const clone=res.clone();
-    caches.open(CACHE).then(c=>c.put(e.request,clone));
-    return res;
-  })));
-});`;
-    const swBlob=new Blob([swCode],{type:'application/javascript'});
-    const swUrl=URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{});
-  }
-})();
-
 initFB();
+
+// ── PWA Service Worker (inline) ────────────────────────────────────────
+if('serviceWorker' in navigator) {
+  const swCode = `
+const CACHE = 'team-manager-v1';
+const PRECACHE = [
+  'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js'
+];
+self.addEventListener('install', e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE).catch(()=>{})));
+  self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+  e.waitUntil(caches.keys().then(keys =>
+    Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+self.addEventListener('fetch', e => {
+  // Network-first for Firebase (live data), cache-first for Firebase SDK scripts
+  if(e.request.url.includes('firebasejs')) {
+    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => {
+      caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+      return res;
+    })));
+  }
+});`;
+  const blob = new Blob([swCode], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, {scope:'/'})
+    .catch(()=>{}); // Silently fail — app works fine without SW
+}
 </script>
 </body>
 </html>
