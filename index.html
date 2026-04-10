@@ -238,7 +238,29 @@ textarea.fi{min-height:78px;resize:vertical}
 .lb-chip.unavail{background:#7f1d1d;border-color:#fca5a5}
 .lb-chip:active{transform:scale(.96)}
 
-/* ── Positions / Roster page ── */
+/* ── Parent view ── */
+.pv-header{background:var(--gd);color:#fff;padding:14px 16px;text-align:center}
+.pv-team{font-size:13px;font-weight:700;opacity:.7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.pv-score{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:6px}
+.pv-score-num{font-size:52px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.pv-score-sep{font-size:32px;opacity:.5}
+.pv-teams{display:flex;justify-content:space-between;font-size:12px;opacity:.7;padding:0 20px}
+.pv-clock{font-size:14px;font-weight:700;margin-top:8px;font-variant-numeric:tabular-nums}
+.pv-half{font-size:11px;opacity:.6;margin-top:2px}
+.pv-pitch{background:#2a2a3a;position:relative;height:320px;border:none;overflow:hidden;margin:0}
+.pv-pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pv-chip{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+.pv-chip-tag{font-size:7px;color:rgba(255,255,255,.45);margin-bottom:1px}
+.pv-chip-name{background:var(--germany-red);color:#fff;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;min-width:44px;text-align:center}
+.pv-log{padding:12px 14px}
+.pv-log-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.pv-ev{display:flex;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px;align-items:flex-start}
+.pv-ev-min{font-size:11px;font-weight:700;color:var(--germany-red);min-width:28px;padding-top:1px}
+.pv-ev-ico{font-size:14px;min-width:20px}
+.pv-ev-txt{flex:1;color:var(--color-text-primary);line-height:1.4}
+.pv-empty{color:var(--color-text-secondary);font-size:13px;font-style:italic;padding:8px 0}
+.qr-wrap{text-align:center;padding:14px}
+.qr-label{font-size:12px;color:var(--muted);margin-top:8px}
 .pos-table{width:100%;border-collapse:collapse;font-size:13px}
 .pos-table th{background:var(--g);color:#fff;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:.4px;white-space:nowrap}
 .pos-table td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
@@ -510,6 +532,10 @@ const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
 // ── Firebase ───────────────────────────────────────────────────────────
 function initFB() {
+  // Check URL for parent view
+  if(new URLSearchParams(window.location.search).get('view')==='parent'){
+    S.view='parent';
+  }
   if (!FB_OK) { render(); return; }
   try {
     firebase.initializeApp(FB_CFG);
@@ -590,10 +616,11 @@ window.closeModal = function(){ S.modal=null; renderApp(); };
 function render() {
   const app=document.getElementById('app');
   app.innerHTML='';
-  if(S.view==='season')       renderSeason(app);
+  if(S.view==='parent')       renderParent(app);
+  else if(S.view==='season')       renderSeason(app);
   else if(S.view==='game')     renderGame(app);
   else if(S.view==='roster')   renderRoster(app);
-  else if(S.view==='positions') renderRoster(app); // legacy alias
+  else if(S.view==='positions') renderRoster(app);
   else if(S.view==='bagtags')  renderBagTags(app);
   else if(S.view==='stats')    renderStats(app);
   const md=document.getElementById('modal');
@@ -773,8 +800,9 @@ window.clearGameData=function(){
 function renderLineup(c) {
   const curFormation=(S.gameData.lineup||{})[S.lhalf]?.formation||DEFAULT_FORMATION;
   c.innerHTML=`
-    <div class="print-btn-wrap no-print">
-      <button class="btn btn-s btn-sm" onclick="window.print()">🖨 Print Lineup</button>
+    <div class="print-btn-wrap no-print" style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-s btn-sm" onclick="showModal('copyLineup')">⎘ Copy from game</button>
+      <button class="btn btn-s btn-sm" onclick="window.print()">🖨 Print</button>
     </div>
     <div class="half-tabs no-print">
       <button class="ht ${S.lhalf==='h1'?'on':''}" onclick="setLH('h1')">First Half</button>
@@ -1073,6 +1101,7 @@ function renderLive(c){
     <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()">${S.clock.running?'⏸':'▶'}</button>
     <button class="clock-btn reset" onclick="adjustClock()" title="Adjust clock to actual minute" style="font-size:13px;font-weight:700">±</button>
     <button class="clock-btn reset" onclick="resetClock()" title="Reset clock to 35:00">↺</button>
+    <button class="clock-btn reset" onclick="showModal('qr')" title="Parent view QR" style="font-size:14px">QR</button>
   </div>
   ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
     ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
@@ -1327,7 +1356,11 @@ function evHtml(e){
 
 window.delEvent=function(id){ if(confirm('Delete?')) dbRemove(`${S.gameId}/events/${id}`); };
 window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,positionSlot:null,minute:clockMinute(),clockSecs:clockElapsed()}; renderApp(); };
-window.showModal=function(type){ S.modal={type,playerOff:null,playerOn:null,positionSlot:null,scorer:null,assistedBy:null,minute:clockMinute(),clockSecs:clockElapsed(),text:''}; renderApp(); };
+window.showModal=function(type){
+  if(type==='qr'){ S.modal={type:'qr'}; renderApp(); return; }
+  if(type==='copyLineup'){ S.modal={type:'copyLineup',srcGame:null,srcHalf:'h1',dstHalf:S.lhalf}; renderApp(); return; }
+  S.modal={type,playerOff:null,playerOn:null,positionSlot:null,scorer:null,assistedBy:null,minute:clockMinute(),clockSecs:clockElapsed(),text:''}; renderApp();
+};
 window.selectP=function(field,name){ S.modal[field]=name===S.modal[field]?null:name; renderModal(document.getElementById('modal')); };
 window.setModalMin=function(v){ S.modal.minute=v; };
 window.setModalText=function(v){ S.modal.text=v; };
@@ -1338,12 +1371,14 @@ function renderModal(md){
   md.innerHTML='';
   const ov=document.createElement('div'); ov.className='mo';
   const box=document.createElement('div'); box.className='mb';
-  if(m.type==='sub')          buildSubModal(box);
+  if(m.type==='sub')             buildSubModal(box);
   else if(m.type==='goal')       buildGoalModal(box);
   else if(m.type==='note')       buildNoteModal(box);
   else if(m.type==='benchFor')   buildBenchForModal(box);
   else if(m.type==='liveSubTarget') buildLiveSubTargetModal(box);
   else if(m.type==='rosterEdit') buildRosterEditModal(box);
+  else if(m.type==='qr')         buildQRModal(box);
+  else if(m.type==='copyLineup') buildCopyLineupModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
   md.appendChild(ov);
@@ -1914,6 +1949,158 @@ function renderBTGrid(c){
   <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
     ✓ = awarded once &nbsp;·&nbsp; number = times awarded &nbsp;·&nbsp; yellow row = needs Hardest Worker
   </div>`;
+}
+
+// ── QR + Copy Lineup modals ────────────────────────────────────────────
+function buildQRModal(box){
+  const url=window.location.origin+window.location.pathname+'?view=parent';
+  // Generate QR using a free CDN service embedded as image
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  box.innerHTML=`<div class="mt">Parent View QR<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="qr-wrap">
+      <img src="${qrUrl}" width="200" height="200" style="border-radius:8px;border:4px solid var(--color-border-tertiary)" alt="QR code">
+      <div class="qr-label">Parents scan to follow live</div>
+      <div style="margin-top:10px;padding:8px 10px;background:var(--color-background-secondary);border-radius:6px;font-size:11px;word-break:break-all;color:var(--color-text-secondary)">${url}</div>
+    </div>`;
+}
+
+function buildCopyLineupModal(box){
+  const m=S.modal;
+  const otherGames=GAMES.filter(g=>g.id!==S.gameId&&S.allGames[g.id]?.lineup);
+  if(!otherGames.length){
+    box.innerHTML=`<div class="mt">Copy Lineup<button class="mc" onclick="closeModal()">×</button></div>
+      <div style="padding:20px;text-align:center;color:var(--color-text-secondary);font-size:14px">No other games with lineups yet.</div>`;
+    return;
+  }
+  box.innerHTML=`<div class="mt">Copy Lineup From…<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Source game</div>
+    <div class="psg" style="grid-template-columns:1fr 1fr">
+      ${otherGames.map(g=>{
+        const opp=S.allGames[g.id]?.meta?.opponent||g.label;
+        return `<button class="psb ${m.srcGame===g.id?'sel':''}" onclick="S.modal.srcGame='${g.id}';renderModal(document.getElementById('modal'))">${opp}<div style="font-size:10px;font-weight:400;opacity:.7">${g.label}</div></button>`;
+      }).join('')}
+    </div>
+    <div class="modal-section">Which half to copy</div>
+    <div class="rm-seg" style="gap:8px">
+      <button class="${m.srcHalf==='h1'?'on':''}" onclick="S.modal.srcHalf='h1';renderModal(document.getElementById('modal'))">First Half</button>
+      <button class="${m.srcHalf==='h2'?'on':''}" onclick="S.modal.srcHalf='h2';renderModal(document.getElementById('modal'))">Second Half</button>
+    </div>
+    <div class="modal-section" style="margin-top:12px">Copy into</div>
+    <div class="rm-seg" style="gap:8px">
+      <button class="${m.dstHalf==='h1'?'on':''}" onclick="S.modal.dstHalf='h1';renderModal(document.getElementById('modal'))">First Half</button>
+      <button class="${m.dstHalf==='h2'?'on':''}" onclick="S.modal.dstHalf='h2';renderModal(document.getElementById('modal'))">Second Half</button>
+    </div>
+    <button class="conf" ${m.srcGame&&m.srcHalf&&m.dstHalf?'':'disabled'} onclick="confirmCopyLineup()">Copy Lineup</button>`;
+}
+
+window.confirmCopyLineup=function(){
+  const m=S.modal;
+  const src=S.allGames[m.srcGame]?.lineup?.[m.srcHalf];
+  if(!src){ alert('No lineup found for that selection.'); return; }
+  if(!S.gameData.lineup) S.gameData.lineup={};
+  // Deep copy including bench, benchFor, formation
+  S.gameData.lineup[m.dstHalf]=JSON.parse(JSON.stringify(src));
+  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
+  S.lhalf=m.dstHalf;
+  closeModal();
+};
+
+// ── Parent view ────────────────────────────────────────────────────────
+function renderParent(a){
+  // Find the live or most recent game
+  const liveGame=Object.entries(S.allGames)
+    .map(([id,d])=>({id,...d}))
+    .find(g=>g.meta?.status==='live')
+    || Object.entries(S.allGames)
+      .map(([id,d])=>({id,...d}))
+      .filter(g=>g.meta?.opponent)
+      .pop();
+
+  if(!liveGame){
+    a.innerHTML=`<div class="pv-header"><div class="pv-team">${S.teamName}</div>
+      <div style="font-size:16px;opacity:.7;padding:20px 0">No game in progress</div></div>`;
+    return;
+  }
+
+  const gd=liveGame;
+  const m=gd.meta||{};
+  const opp=m.opponent||'Opponent';
+  const team=S.teamName||'Germany';
+  const isLive=m.status==='live';
+  const isComplete=m.status==='complete';
+  const scoreUs=m.scoreUs!==undefined&&m.scoreUs!==''?m.scoreUs:'—';
+  const scoreThem=m.scoreThem!==undefined&&m.scoreThem!==''?m.scoreThem:'—';
+
+  // Build current on-field from H1 by default, H2 if events suggest
+  const events=Object.values(gd.events||{}).sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
+  const liveHalf=events.some(e=>e.half===2)?2:1;
+  const hk=`h${liveHalf}`;
+  const ln=(gd.lineup||{})[hk]||{};
+  const posArr=(()=>{const f=ln.formation||DEFAULT_FORMATION;return(FORMATIONS[f]||FORMATIONS[DEFAULT_FORMATION]).pos;})();
+  const posMap={}, playerSlot={};
+  posArr.forEach(pos=>{ if(ln[pos.id]){ posMap[pos.id]=ln[pos.id]; playerSlot[ln[pos.id]]=pos.id; } });
+  const startMin=liveHalf===1?0:HALF, endMin=liveHalf===1?HALF:HALF*2;
+  events.filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin).forEach(e=>{
+    const slot=e.positionSlot||playerSlot[e.playerOff]||null;
+    if(e.playerOff){ delete playerSlot[e.playerOff]; if(slot) delete posMap[slot]; }
+    if(e.playerOn&&slot){ posMap[slot]=e.playerOn; playerSlot[e.playerOn]=slot; }
+  });
+
+  const goalEvents=events.filter(e=>e.type==='goal');
+  const subEvents=events.filter(e=>e.type==='sub');
+  const allLogEvents=[...goalEvents,...subEvents].sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
+
+  a.innerHTML=`
+  <div class="pv-header">
+    <div class="pv-team">${team}</div>
+    <div class="pv-score">
+      <div class="pv-score-num">${scoreUs}</div>
+      <div class="pv-score-sep">—</div>
+      <div class="pv-score-num">${scoreThem}</div>
+    </div>
+    <div class="pv-teams"><span>${team}</span><span>${opp}</span></div>
+    <div class="pv-clock">${isLive?'LIVE':isComplete?'FINAL':'UPCOMING'}</div>
+    <div class="pv-half">${isLive||isComplete?`Half ${liveHalf}`:m.date||''}</div>
+  </div>
+
+  <div class="pv-pitch" id="pv-pitch-wrap" style="position:relative;height:300px;overflow:hidden;background:#2a2a3a">
+    <svg viewBox="0 0 300 300" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
+      <rect x="1" y="1" width="298" height="298" fill="none" stroke="white" stroke-width="1.5" opacity=".3"/>
+      <line x1="0" y1="150" x2="300" y2="150" stroke="white" stroke-width="1" opacity=".2"/>
+      <circle cx="150" cy="150" r="30" fill="none" stroke="white" stroke-width="1" opacity=".2"/>
+      <rect x="70" y="1" width="160" height="46" fill="none" stroke="white" stroke-width="1" opacity=".2"/>
+      <rect x="70" y="253" width="160" height="46" fill="none" stroke="white" stroke-width="1" opacity=".2"/>
+    </svg>
+    ${posArr.map(pos=>{
+      const name=posMap[pos.id]||'';
+      if(!name) return '';
+      return `<div class="pv-chip" style="left:${pos.l}%;top:${pos.t}%">
+        <div class="pv-chip-tag">${pos.tag}</div>
+        <div class="pv-chip-name">${name}</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="pv-log">
+    <div class="pv-log-title">Match Events</div>
+    ${!allLogEvents.length?`<div class="pv-empty">No events yet</div>`:''}
+    ${allLogEvents.map(e=>{
+      if(e.type==='goal') return `<div class="pv-ev">
+        <div class="pv-ev-min">${e.minute}'</div>
+        <div class="pv-ev-ico">⚽</div>
+        <div class="pv-ev-txt"><strong>${e.scorer}</strong>${e.assistedBy?` (assist: ${e.assistedBy})`:''}</div>
+      </div>`;
+      return `<div class="pv-ev">
+        <div class="pv-ev-min">${e.minute}'</div>
+        <div class="pv-ev-ico">↕</div>
+        <div class="pv-ev-txt"><strong>${e.playerOn}</strong> on for ${e.playerOff}</div>
+      </div>`;
+    }).join('')}
+    <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--color-text-secondary)">Updates live · ${S.teamName} Season Manager</div>
+  </div>`;
+
+  // Auto-refresh every 15 seconds for parents
+  if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },15000);
 }
 
 initFB();
