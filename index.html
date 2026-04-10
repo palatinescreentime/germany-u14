@@ -263,6 +263,26 @@ textarea.fi{min-height:78px;resize:vertical}
 .pv-empty{color:var(--color-text-secondary);font-size:13px;font-style:italic;padding:8px 0}
 .qr-wrap{text-align:center;padding:14px}
 .qr-label{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* ── Parent game tiles ── */
+.pv-season{padding:14px}
+.pv-season-hd{background:var(--gd);color:#fff;padding:16px 14px 14px;text-align:center;margin-bottom:14px}
+.pv-season-title{font-size:18px;font-weight:700;letter-spacing:.3px}
+.pv-season-sub{font-size:11px;opacity:.6;margin-top:4px}
+.pv-tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px}
+.pv-tile{background:#fff;border-radius:10px;padding:14px 12px;border:1.5px solid var(--border);cursor:pointer;transition:border-color .15s;text-align:center}
+.pv-tile:active{border-color:var(--germany-red)}
+.pv-tile.live{border-color:var(--germany-red);border-width:2px}
+.pv-tile.complete{background:var(--gl)}
+.pv-tile-opp{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.pv-tile-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.pv-tile-score{font-size:22px;font-weight:700;color:var(--germany-red);font-variant-numeric:tabular-nums;margin-bottom:4px}
+.pv-tile-status{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;text-transform:capitalize}
+.pv-tile-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pv-tile-dot.live{background:var(--germany-red);animation:pulse 1s infinite}
+.pv-tile-dot.complete{background:#1a6b2f}
+.pv-tile-dot.upcoming{background:#bbb}
+.pv-back{background:none;border:none;color:var(--germany-red);font-size:14px;font-weight:700;cursor:pointer;padding:8px 0;display:flex;align-items:center;gap:6px;margin-bottom:10px}
 .pos-table{width:100%;border-collapse:collapse;font-size:13px}
 .pos-table th{background:var(--g);color:#fff;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:.4px;white-space:nowrap}
 .pos-table td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
@@ -449,6 +469,7 @@ let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
   gameData:{}, allGames:{}, bagTags:{}, roster:null, teamName:'Germany U14',
   btView:'award', btGame:'g1', selected:null, modal:null,
+  pvGameId:null,
   clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
 
@@ -1310,13 +1331,20 @@ function renderFinalScoreCard(){
   return `<div class="score-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div class="card-title" style="margin-bottom:0">Score</div>
-      <span style="font-size:11px;color:var(--muted)">Goals logged auto-fill ${team} · edit freely</span>
+      <span style="font-size:11px;color:var(--muted)">Germany auto-fills from goals · adjust freely</span>
     </div>
     <div class="score-row">
       <div class="score-team">${team}</div>
       <input class="score-in" id="score-us" type="number" min="0" max="20" value="${liveUs}" oninput="liveScoreChange()">
       <div class="score-sep">–</div>
-      <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-s btn-sm" style="padding:4px 10px;font-size:14px;font-weight:700" onclick="oppGoal(-1)">−</button>
+          <button class="btn btn-p btn-sm" style="padding:4px 10px;font-size:14px;font-weight:700" onclick="oppGoal(1)">+</button>
+        </div>
+        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${opp} goal</div>
+      </div>
       <div class="score-team" style="text-align:right">${opp}</div>
     </div>
     ${goalsScored>liveUs?`<div style="font-size:11px;color:#d97706;margin-bottom:8px">⚠ ${goalsScored} goal${goalsScored>1?'s':''} logged — own goal or scorer untracked?</div>`:''}
@@ -1328,10 +1356,18 @@ window.liveScoreChange=function(){
   const us=document.getElementById('score-us')?.value;
   const them=document.getElementById('score-them')?.value;
   if(us===''||us===null) return;
-  // Save interim score so it persists across renders
   const upd={scoreUs:+us,scoreThem:+(them||0)};
   S.gameData.meta={...(S.gameData.meta||{}),...upd};
   dbUpdate(`${S.gameId}/meta`,upd);
+};
+
+window.oppGoal=function(delta){
+  const cur=S.gameData.meta||{};
+  const newThem=Math.max(0,(+(cur.scoreThem)||0)+delta);
+  const upd={scoreThem:newThem};
+  S.gameData.meta={...cur,...upd};
+  dbUpdate(`${S.gameId}/meta`,upd);
+  renderApp();
 };
 
 window.saveFinalScore=function(){
@@ -2035,38 +2071,88 @@ window.confirmCopyLineup=function(){
 
 // ── Parent view ────────────────────────────────────────────────────────
 function renderParent(a){
-  // Find live or most recent game
-  const liveGame=Object.entries(S.allGames)
-    .map(([id,d])=>({id,...d}))
-    .find(g=>g.meta?.status==='live')
-    || Object.entries(S.allGames)
-      .map(([id,d])=>({id,...d}))
-      .filter(g=>g.meta?.opponent)
-      .pop();
+  if(window._pvClockTimer){ clearInterval(window._pvClockTimer); window._pvClockTimer=null; }
 
-  // Auto-listen to the live game so clock/score/events update in real time
-  if(liveGame && liveGame.id !== S.gameId){
-    S.gameId = liveGame.id;
-    S.gameData = liveGame;
-    listenGame(liveGame.id);
-  }
-
-  if(!liveGame){
-    a.innerHTML=`<div class="pv-header"><div class="pv-team">${S.teamName}</div>
-      <div style="font-size:16px;opacity:.7;padding:20px 0">No game in progress</div></div>`;
+  // Season tile view
+  if(!S.pvGameId){
+    renderParentSeason(a);
+    if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },20000);
     return;
   }
 
-  const gd=liveGame;
+  // Game detail view — auto-listen for real-time updates
+  const gd=S.allGames[S.pvGameId]||{};
+  if(S.pvGameId !== S.gameId){
+    S.gameId=S.pvGameId;
+    S.gameData=gd;
+    listenGame(S.pvGameId);
+  }
+
+  renderParentGame(a, S.pvGameId, S.gameData||gd);
+  if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },20000);
+}
+
+function renderParentSeason(a){
+  const team=S.teamName||'Germany';
+  const regularGames=GAMES.filter(g=>g.type==='regular');
+  const tourneyGames=GAMES.filter(g=>g.type==='tournament');
+
+  function tileHtml(g){
+    const d=S.allGames[g.id]||{};
+    const st=d.meta?.status||'upcoming';
+    const opp=d.meta?.opponent||'TBD';
+    const us=d.meta?.scoreUs;
+    const them=d.meta?.scoreThem;
+    const hasScore=us!==undefined&&us!=='';
+    const scoreStr=hasScore?`${us} – ${them}`:'';
+    return `<div class="pv-tile ${st}" onclick="pvOpenGame('${g.id}')">
+      <div class="pv-tile-lbl">${g.label}</div>
+      <div class="pv-tile-opp">${opp}</div>
+      ${scoreStr?`<div class="pv-tile-score">${scoreStr}</div>`:''}
+      <div class="pv-tile-status">
+        <span class="pv-tile-dot ${st}"></span>
+        <span style="color:var(--muted);text-transform:capitalize">${st}</span>
+      </div>
+    </div>`;
+  }
+
+  a.innerHTML=`
+  <div class="pv-season-hd">
+    <div class="pv-season-title">${team}</div>
+    <div class="pv-season-sub">Spring 2026 · Tap a game to follow along</div>
+  </div>
+  <div class="pv-season">
+    <div class="sec-label">Regular Season</div>
+    <div class="pv-tile-grid">${regularGames.map(tileHtml).join('')}</div>
+    <div class="sec-label" style="margin-top:14px">Tournament</div>
+    <div class="pv-tile-grid">${tourneyGames.map(tileHtml).join('')}</div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:20px">Updates every 20 seconds · ${team} Season Manager</div>
+  </div>`;
+}
+
+window.pvOpenGame=function(id){
+  S.pvGameId=id;
+  S.gameId=id;
+  S.gameData=S.allGames[id]||{};
+  listenGame(id);
+  render();
+};
+
+window.pvBack=function(){
+  S.pvGameId=null;
+  if(window._pvClockTimer){ clearInterval(window._pvClockTimer); window._pvClockTimer=null; }
+  render();
+};
+
+function renderParentGame(a, gid, gd){
   const m=gd.meta||{};
   const opp=m.opponent||'Opponent';
   const team=S.teamName||'Germany';
   const isLive=m.status==='live';
   const isComplete=m.status==='complete';
-  const scoreUs=m.scoreUs!==undefined&&m.scoreUs!==''?m.scoreUs:'—';
-  const scoreThem=m.scoreThem!==undefined&&m.scoreThem!==''?m.scoreThem:'—';
+  const scoreUs=m.scoreUs!==undefined&&m.scoreUs!==''?m.scoreUs:'0';
+  const scoreThem=m.scoreThem!==undefined&&m.scoreThem!==''?m.scoreThem:'0';
 
-  // Build current on-field from H1 by default, H2 if events suggest
   const events=Object.values(gd.events||{}).sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
   const liveHalf=events.some(e=>e.half===2)?2:1;
   const hk=`h${liveHalf}`;
@@ -2081,27 +2167,26 @@ function renderParent(a){
     if(e.playerOn&&slot){ posMap[slot]=e.playerOn; playerSlot[e.playerOn]=slot; }
   });
 
-  const goalEvents=events.filter(e=>e.type==='goal');
-  const subEvents=events.filter(e=>e.type==='sub');
-  const allLogEvents=[...goalEvents,...subEvents].sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
+  const allLogEvents=events.filter(e=>e.type==='goal'||e.type==='sub').sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
 
   a.innerHTML=`
   <div class="pv-header">
+    <button class="pv-back" onclick="pvBack()">‹ All Games</button>
     <div class="pv-team">${team}</div>
     <div class="pv-score">
       <div class="pv-score-num">${scoreUs}</div>
-      <div class="pv-score-sep">—</div>
+      <div class="pv-score-sep">–</div>
       <div class="pv-score-num">${scoreThem}</div>
     </div>
     <div class="pv-teams"><span>${team}</span><span>${opp}</span></div>
     <div id="pv-clock-wrap">
       <div class="pv-clock" id="pv-clock-disp">${isLive?'LIVE':isComplete?'FINAL':'UPCOMING'}</div>
-      <div class="pv-half" id="pv-clock-sub">${isLive||isComplete?`Half ${liveHalf}`:m.date||''}</div>
+      <div class="pv-half" id="pv-clock-sub">${isLive||isComplete?`Half ${liveHalf}`:''}</div>
       ${isLive?`<div style="font-size:10px;opacity:.45;margin-top:4px;letter-spacing:.3px">* unofficial game clock</div>`:''}
     </div>
   </div>
 
-  <div class="pv-pitch" id="pv-pitch-wrap" style="position:relative;height:300px;overflow:hidden;background:#2a2a3a">
+  <div style="position:relative;height:300px;overflow:hidden;background:#2a2a3a">
     <svg viewBox="0 0 300 300" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">
       <rect x="1" y="1" width="298" height="298" fill="none" stroke="white" stroke-width="1.5" opacity=".3"/>
       <line x1="0" y1="150" x2="300" y2="150" stroke="white" stroke-width="1" opacity=".2"/>
@@ -2117,6 +2202,7 @@ function renderParent(a){
         <div class="pv-chip-name">${name}</div>
       </div>`;
     }).join('')}
+    ${!Object.values(posMap).some(Boolean)?`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:13px">Lineup not set yet</div>`:''}
   </div>
 
   <div class="pv-log">
@@ -2134,41 +2220,35 @@ function renderParent(a){
         <div class="pv-ev-txt"><strong>${e.playerOn}</strong> on for ${e.playerOff}</div>
       </div>`;
     }).join('')}
-    <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--color-text-secondary)">Updates live · ${S.teamName} Season Manager</div>
+    <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--color-text-secondary)">Updates live · ${team} Season Manager</div>
   </div>`;
 
-  // ── Live ticking clock for parent view ──
-  if(window._pvClockTimer) clearInterval(window._pvClockTimer);
-
-  const clockState = gd.clockState;
-  if(isLive && clockState){
-    const halfDur = clockState.halfDuration || HALF*60;
+  // Live ticking clock
+  if(window._pvClockTimer){ clearInterval(window._pvClockTimer); window._pvClockTimer=null; }
+  const clockState=gd.clockState;
+  if(isLive&&clockState){
+    const halfDur=clockState.halfDuration||HALF*60;
     function pvClockDisplay(){
-      let elapsed = clockState.elapsed || 0;
-      if(clockState.running && clockState.startedAt){
-        elapsed += Math.floor((Date.now() - clockState.startedAt) / 1000);
-      }
-      const rem = halfDur - elapsed;
-      const abs = Math.abs(rem);
-      const m = Math.floor(abs/60), s = abs%60;
-      const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-      return rem < 0 ? `+${str}` : str;
+      let elapsed=clockState.elapsed||0;
+      if(clockState.running&&clockState.startedAt) elapsed+=Math.floor((Date.now()-clockState.startedAt)/1000);
+      const rem=halfDur-elapsed;
+      const abs=Math.abs(rem);
+      const mm=Math.floor(abs/60), ss=abs%60;
+      const str=`${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+      return rem<0?`+${str}`:str;
     }
     function pvTick(){
-      const disp = document.getElementById('pv-clock-disp');
-      const sub  = document.getElementById('pv-clock-sub');
-      if(!disp) { clearInterval(window._pvClockTimer); return; }
-      const rem = halfDur - ((clockState.elapsed||0) + (clockState.running && clockState.startedAt ? Math.floor((Date.now()-clockState.startedAt)/1000) : 0));
-      disp.textContent = pvClockDisplay();
-      disp.style.color = rem < 0 ? '#ffce00' : '#fff';
-      if(sub) sub.textContent = `Half ${clockState.half} · * unofficial clock`;
+      const disp=document.getElementById('pv-clock-disp');
+      const sub=document.getElementById('pv-clock-sub');
+      if(!disp){clearInterval(window._pvClockTimer);return;}
+      const rem=halfDur-((clockState.elapsed||0)+(clockState.running&&clockState.startedAt?Math.floor((Date.now()-clockState.startedAt)/1000):0));
+      disp.textContent=pvClockDisplay();
+      disp.style.color=rem<0?'#ffce00':'#fff';
+      if(sub) sub.textContent=`Half ${clockState.half} · * unofficial clock`;
     }
     pvTick();
-    if(clockState.running) window._pvClockTimer = setInterval(pvTick, 1000);
+    if(clockState.running) window._pvClockTimer=setInterval(pvTick,1000);
   }
-
-  // Auto-refresh full parent view every 20s for score/lineup/events
-  if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },20000);
 }
 
 initFB();
