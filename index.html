@@ -471,6 +471,18 @@ function clockDisplay(){
   const str=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   return rem<0 ? `+${str}` : str; // show +MM:SS in overtime
 }
+function saveClockState(){
+  if(!db||!S.gameId) return;
+  const h=S.liveHalf-1;
+  db.ref(`germany-u14/games/${S.gameId}/clockState`).set({
+    half: S.liveHalf,
+    elapsed: S.clock.elapsed[h],
+    running: S.clock.running,
+    startedAt: S.clock.running ? Date.now() : null,
+    halfDuration: HALF*60
+  });
+}
+
 window.toggleClock=function(){
   const h=S.liveHalf-1;
   if(S.clock.running){
@@ -486,6 +498,7 @@ window.toggleClock=function(){
       dbUpdate(`${S.gameId}/meta`,{status:'live'});
     }
   }
+  saveClockState();
   tickClock();
 };
 window.resetClock=function(){
@@ -493,30 +506,29 @@ window.resetClock=function(){
   const h=S.liveHalf-1;
   S.clock.elapsed[h]=0; S.clock.startedAt=null; S.clock.running=false;
   clearInterval(clockInterval); clockInterval=null;
+  saveClockState();
   tickClock();
 };
 window.adjustClock=function(){
   const was=S.clock.running;
-  // Pause if running
   if(was){
     const h=S.liveHalf-1;
     S.clock.elapsed[h]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
     S.clock.startedAt=null; S.clock.running=false;
     clearInterval(clockInterval); clockInterval=null;
   }
-  const elapsed=clockElapsed();
-  const currentMin=Math.floor(elapsed/60);
-  const input=prompt(`Clock is at ${clockDisplay()}.\n\nEnter the ACTUAL minute the game is at (0–${HALF}):`,''+currentMin);
-  if(input===null){ if(was) window.toggleClock(); return; } // cancelled — resume
+  const input=prompt(`Clock is at ${clockDisplay()}.\n\nEnter the ACTUAL minute the game is at (0–${HALF}):`, ''+clockMinute());
+  if(input===null){ if(was) window.toggleClock(); return; }
   const parsed=parseInt(input,10);
   if(isNaN(parsed)||parsed<0||parsed>HALF+10){ alert('Invalid minute.'); if(was) window.toggleClock(); return; }
   const h=S.liveHalf-1;
   S.clock.elapsed[h]=parsed*60;
   S.clock.startedAt=null;
-  if(was){ // resume
+  if(was){
     S.clock.startedAt=Date.now(); S.clock.running=true;
     clockInterval=setInterval(tickClock,1000);
   }
+  saveClockState();
   tickClock();
 };
 function tickClock(){
@@ -537,8 +549,7 @@ function initFB() {
   if(new URLSearchParams(window.location.search).get('view')==='parent'){
     S.view='parent';
   }
-  if (!FB_OK) { render(); return; }
-  try {
+  if (!FB_OK) { render(); return; }  try {
     firebase.initializeApp(FB_CFG);
     db = firebase.database();
     db.ref('germany-u14/games').on('value', s => {
@@ -577,6 +588,8 @@ function listenGame(id) {
   gameRef.on('value', s => {
     S.gameData = s.val() || {};
     if (S.view==='game') renderGame(document.getElementById('app'));
+    // Re-render parent view on any data change (score, events, clockState)
+    if (S.view==='parent') render();
   });
 }
 
@@ -603,12 +616,12 @@ window.setBTGame = function(id){ S.btGame=id; renderApp(); };
 window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
 window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
 window.setLiveHalf = function(h){
-  // pause clock when switching halves
   if(S.clock.running){
     const idx=S.liveHalf-1;
     S.clock.elapsed[idx]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
     S.clock.startedAt=null; S.clock.running=false;
     clearInterval(clockInterval); clockInterval=null;
+    saveClockState();
   }
   S.liveHalf=h; renderApp();
 };
@@ -2008,7 +2021,7 @@ window.confirmCopyLineup=function(){
 
 // ── Parent view ────────────────────────────────────────────────────────
 function renderParent(a){
-  // Find the live or most recent game
+  // Find live or most recent game
   const liveGame=Object.entries(S.allGames)
     .map(([id,d])=>({id,...d}))
     .find(g=>g.meta?.status==='live')
@@ -2016,6 +2029,13 @@ function renderParent(a){
       .map(([id,d])=>({id,...d}))
       .filter(g=>g.meta?.opponent)
       .pop();
+
+  // Auto-listen to the live game so clock/score/events update in real time
+  if(liveGame && liveGame.id !== S.gameId){
+    S.gameId = liveGame.id;
+    S.gameData = liveGame;
+    listenGame(liveGame.id);
+  }
 
   if(!liveGame){
     a.innerHTML=`<div class="pv-header"><div class="pv-team">${S.teamName}</div>
@@ -2060,8 +2080,11 @@ function renderParent(a){
       <div class="pv-score-num">${scoreThem}</div>
     </div>
     <div class="pv-teams"><span>${team}</span><span>${opp}</span></div>
-    <div class="pv-clock">${isLive?'LIVE':isComplete?'FINAL':'UPCOMING'}</div>
-    <div class="pv-half">${isLive||isComplete?`Half ${liveHalf}`:m.date||''}</div>
+    <div id="pv-clock-wrap">
+      <div class="pv-clock" id="pv-clock-disp">${isLive?'LIVE':isComplete?'FINAL':'UPCOMING'}</div>
+      <div class="pv-half" id="pv-clock-sub">${isLive||isComplete?`Half ${liveHalf}`:m.date||''}</div>
+      ${isLive?`<div style="font-size:10px;opacity:.45;margin-top:4px;letter-spacing:.3px">* unofficial game clock</div>`:''}
+    </div>
   </div>
 
   <div class="pv-pitch" id="pv-pitch-wrap" style="position:relative;height:300px;overflow:hidden;background:#2a2a3a">
@@ -2100,8 +2123,38 @@ function renderParent(a){
     <div style="margin-top:16px;text-align:center;font-size:11px;color:var(--color-text-secondary)">Updates live · ${S.teamName} Season Manager</div>
   </div>`;
 
-  // Auto-refresh every 15 seconds for parents
-  if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },15000);
+  // ── Live ticking clock for parent view ──
+  if(window._pvClockTimer) clearInterval(window._pvClockTimer);
+
+  const clockState = gd.clockState;
+  if(isLive && clockState){
+    const halfDur = clockState.halfDuration || HALF*60;
+    function pvClockDisplay(){
+      let elapsed = clockState.elapsed || 0;
+      if(clockState.running && clockState.startedAt){
+        elapsed += Math.floor((Date.now() - clockState.startedAt) / 1000);
+      }
+      const rem = halfDur - elapsed;
+      const abs = Math.abs(rem);
+      const m = Math.floor(abs/60), s = abs%60;
+      const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      return rem < 0 ? `+${str}` : str;
+    }
+    function pvTick(){
+      const disp = document.getElementById('pv-clock-disp');
+      const sub  = document.getElementById('pv-clock-sub');
+      if(!disp) { clearInterval(window._pvClockTimer); return; }
+      const rem = halfDur - ((clockState.elapsed||0) + (clockState.running && clockState.startedAt ? Math.floor((Date.now()-clockState.startedAt)/1000) : 0));
+      disp.textContent = pvClockDisplay();
+      disp.style.color = rem < 0 ? '#ffce00' : '#fff';
+      if(sub) sub.textContent = `Half ${clockState.half} · * unofficial clock`;
+    }
+    pvTick();
+    if(clockState.running) window._pvClockTimer = setInterval(pvTick, 1000);
+  }
+
+  // Auto-refresh full parent view every 20s for score/lineup/events
+  if(!window._pvTimer) window._pvTimer=setInterval(()=>{ if(S.view==='parent') render(); },20000);
 }
 
 initFB();
