@@ -232,6 +232,7 @@ textarea.fi{min-height:78px;resize:vertical}
 .lchip-name.unavail{background:#7f1d1d;border-color:#fca5a5}
 .lchip:active .lchip-name{transform:scale(1.08)}
 .lchip-name.sub-hint{border-color:#ffd700;animation:subpulse 1.2s infinite}
+.lchip-name.sub-pending{border-color:#ffd700;border-width:2px}
 @keyframes subpulse{0%,100%{border-color:#ffd700}50%{border-color:rgba(255,215,0,.3)}}
 .live-bench-row{background:#0f0f1f;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a1a2e;border-top:none;margin-bottom:12px}
 .live-bench-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
@@ -1161,6 +1162,18 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
   const {posMap,playerSlot}=buildCurrentPositions(ln,half);
   container.innerHTML='';
 
+  // Build set of on-field players who have a planned sub coming
+  const lnFull=(S.gameData.lineup||{})[hk]||{};
+  const lnBenchArr1=lnFull.bench||[];
+  const lnBenchFor=lnFull.benchFor||[];
+  const liveSubs2=S.gameData.liveSubs?.[hk]||{};
+  const plannedTargets=new Set();
+  benchPlayers.forEach(p=>{
+    const benchIdx=lnBenchArr1.indexOf(p);
+    const target=liveSubs2[p]?.subFor||(benchIdx>=0?lnBenchFor[benchIdx]:'')||'';
+    if(target) plannedTargets.add(target);
+  });
+
   const pitch=document.createElement('div');
   pitch.className='live-pitch';
   pitch.innerHTML=`<svg viewBox="0 0 300 360" preserveAspectRatio="none">
@@ -1178,11 +1191,12 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     const name=posMap[pos.id]||'';
     if(!name) return;
     const isUnavail=avail[name]===false;
+    const isPlanned=plannedTargets.has(name);
     const wrap=document.createElement('div');
     wrap.className='lchip';
     wrap.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
     wrap.innerHTML=`<div class="lchip-tag">${pos.tag}</div>
-      <div class="lchip-name ${isUnavail?'unavail':''}">${name}${isUnavail?' ⚠':''}</div>`;
+      <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned?'sub-pending':''}">${name}${isUnavail?' ⚠':''}</div>`;
     wrap.onclick=()=>{
       S.modal={type:'sub',playerOff:name,playerOn:null,positionSlot:pos.id,
                minute:clockMinute(),clockSecs:clockElapsed()};
@@ -1195,10 +1209,11 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
   onField.forEach(p=>{
     if(playerSlot[p]) return;
     const isUnavail=avail[p]===false;
+    const isPlanned=plannedTargets.has(p);
     const wrap=document.createElement('div');
     wrap.className='lchip'; wrap.style.cssText=`left:50%;top:20%`;
     wrap.innerHTML=`<div class="lchip-tag">?</div>
-      <div class="lchip-name sub-hint ${isUnavail?'unavail':''}">${p}</div>`;
+      <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned?'sub-pending':''}">${p}</div>`;
     wrap.onclick=()=>{
       S.modal={type:'sub',playerOff:p,playerOn:null,positionSlot:null,
                minute:clockMinute(),clockSecs:clockElapsed()};
@@ -1211,9 +1226,9 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
 
   // ── Live bench with planned sub targets ──
   const hk2=`h${half}`;
-  const lnFull=(S.gameData.lineup||{})[hk2]||{};
-  const lnBenchFor=lnFull.benchFor||[];
-  const lnBenchArr=lnFull.bench||[];
+  const lnFull2=(S.gameData.lineup||{})[hk2]||{};
+  const lnBenchFor2=lnFull2.benchFor||[];
+  const lnBenchArr=lnFull2.bench||[];
 
   // Build a sub target map from lineup page data + any live overrides
   // liveSubs: {playerName → {subFor, posSlot}}
@@ -1235,9 +1250,8 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
 
     benchPlayers.forEach(p=>{
       const isUnavail=avail[p]===false;
-      // Find planned sub target: first check live override, then lineup page benchFor
       const benchIdx=lnBenchArr.indexOf(p);
-      const plannedFor=liveSubs[p]?.subFor||(benchIdx>=0?lnBenchFor[benchIdx]:'')||'';
+      const plannedFor=liveSubs[p]?.subFor||(benchIdx>=0?lnBenchFor2[benchIdx]:'')||'';
 
       const wrap=document.createElement('div');
       wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px';
