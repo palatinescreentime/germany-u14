@@ -827,10 +827,15 @@ window.showClearConfirm=function(){
 
 window.clearGameData=function(){
   if(!db) return;
-  // Preserve meta (opponent, date) — only wipe gameplay data
-  const meta=S.gameData.meta||{};
+  // Preserve meta (opponent, date) — wipe all gameplay data including clock
+  const cur=S.gameData.meta||{};
+  const meta={opponent:cur.opponent||'',date:cur.date||'',location:cur.location||'',notes:cur.notes||'',status:'upcoming'};
   db.ref(`germany-u14/games/${S.gameId}`).set({meta});
   S.gameData={meta};
+  // Reset local clock state
+  const h=S.liveHalf-1;
+  S.clock.elapsed=[0,0]; S.clock.startedAt=null; S.clock.running=false;
+  if(clockInterval){ clearInterval(clockInterval); clockInterval=null; }
   renderApp();
 };
 function renderLineup(c) {
