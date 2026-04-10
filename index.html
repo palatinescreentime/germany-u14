@@ -24,10 +24,11 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --g:#1a6b2f;--gd:#124d22;--gl:#e8f5ec;
-  --gold:#e6a817;--red:#c0392b;--blue:#2980b9;
-  --bg:#f0f4f1;--white:#fff;--text:#1a1a1a;--muted:#666;
-  --border:#d0d8d2;--r:8px;
+  --g:#1a1a2e;--gd:#0f0f1f;--gl:#f0f0f5;
+  --gold:#c9a227;--red:#c0392b;--blue:#2980b9;
+  --silver:#a8a9ad;--silver-light:#e8e8ec;--germany-red:#cc0000;--germany-gold:#ffce00;
+  --bg:#f0f0f4;--white:#fff;--text:#1a1a1a;--muted:#666;
+  --border:#d0d0d8;--r:8px;
 }
 body{font-family:-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 *{-webkit-tap-highlight-color:transparent}
@@ -115,13 +116,13 @@ textarea.fi{min-height:78px;resize:vertical}
 .swap-hint{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;min-height:18px;transition:color .2s}
 .swap-hint.active{color:var(--g);font-weight:700}
 
-.pitch{background:#2d7a3a;border-radius:8px 8px 0 0;position:relative;height:390px;border:2px solid #1a5c28;overflow:hidden;cursor:pointer}
+.pitch{background:#2a2a3a;border-radius:8px 8px 0 0;position:relative;height:390px;border:2px solid #1a1a2e;overflow:hidden;cursor:pointer}
 .pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .pslot{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center}
 .ptag{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px;letter-spacing:.4px}
 
 /* Chips */
-.chip{background:var(--red);color:#fff;padding:6px 10px;border-radius:5px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:58px;cursor:pointer;transition:transform .1s,outline .1s;user-select:none}
+.chip{background:var(--germany-red);color:#fff;padding:6px 10px;border-radius:5px;font-size:12px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:58px;cursor:pointer;transition:transform .1s,outline .1s;user-select:none}
 .chip.gk{background:var(--gold);color:#3a1f00}
 .chip.new{border-color:#ffd700}
 .chip.sel{outline:3px solid #fff;outline-offset:2px;transform:scale(1.08)}
@@ -130,11 +131,11 @@ textarea.fi{min-height:78px;resize:vertical}
 .epslot.swap-target{background:rgba(255,215,0,.25);border-color:#ffd700;color:#ffd700}
 
 /* Bench */
-.bench{background:#145525;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a5c28;border-top:none;margin-bottom:12px}
+.bench{background:#0f0f1f;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a1a2e;border-top:none;margin-bottom:12px}
 .blabel{font-size:9px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
 .bslots{display:flex;gap:5px}
 .bslot{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.bslot .chip{width:100%;font-size:10px;padding:5px 3px;min-width:0;background:#1a6b2f}
+.bslot .chip{width:100%;font-size:10px;padding:5px 3px;min-width:0;background:#1a1a2e}
 .bslot .chip.sel{outline-color:#ffd700}
 .bslot .epslot{width:100%;height:28px}
 
@@ -222,18 +223,18 @@ textarea.fi{min-height:78px;resize:vertical}
 .clock-btn.reset{background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:16px;width:36px;height:36px;border-radius:50%;margin-left:-4px}
 
 /* ── Live pitch ── */
-.live-pitch{background:#2d7a3a;border-radius:8px 8px 0 0;position:relative;height:360px;border:2px solid #1a5c28;overflow:hidden}
+.live-pitch{background:#2a2a3a;border-radius:8px 8px 0 0;position:relative;height:360px;border:2px solid #1a1a2e;overflow:hidden}
 .live-pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .lchip{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .lchip-tag{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px}
-.lchip-name{background:var(--red);color:#fff;padding:5px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:52px;transition:transform .1s}
+.lchip-name{background:var(--germany-red);color:#fff;padding:5px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:52px;transition:transform .1s}
 .lchip-name.unavail{background:#7f1d1d;border-color:#fca5a5}
 .lchip:active .lchip-name{transform:scale(1.08)}
 .lchip-name.sub-hint{border-color:#ffd700;animation:subpulse 1.2s infinite}
 @keyframes subpulse{0%,100%{border-color:#ffd700}50%{border-color:rgba(255,215,0,.3)}}
-.live-bench-row{background:#145525;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a5c28;border-top:none;margin-bottom:12px}
+.live-bench-row{background:#0f0f1f;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a1a2e;border-top:none;margin-bottom:12px}
 .live-bench-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
-.lb-chip{background:#1a6b2f;color:#fff;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;white-space:nowrap}
+.lb-chip{background:#1a1a2e;color:#fff;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;white-space:nowrap}
 .lb-chip.unavail{background:#7f1d1d;border-color:#fca5a5}
 .lb-chip:active{transform:scale(.96)}
 
@@ -451,6 +452,12 @@ window.toggleClock=function(){
   } else {
     S.clock.startedAt=Date.now(); S.clock.running=true;
     clockInterval=setInterval(tickClock,1000);
+    // Auto-set status to live on first clock start
+    const cur=S.gameData.meta||{};
+    if(cur.status==='upcoming'||!cur.status){
+      S.gameData.meta={...cur,status:'live'};
+      dbUpdate(`${S.gameId}/meta`,{status:'live'});
+    }
   }
   tickClock();
 };
@@ -646,11 +653,10 @@ function renderSetup(c) {
       <div class="fg"><label class="fl">Location</label>
         <input class="fi" id="inp-loc" placeholder="Field" value="${m.location||''}" onblur="autoSaveInfo()"></div>
     </div>
-    <div class="fg"><label class="fl">Status</label>
-      <div class="sbg">
-        ${['upcoming','live','complete'].map(s=>`
-          <button class="sb ${status===s?'a-'+s:''}" onclick="setStatus('${s}')">${s.charAt(0).toUpperCase()+s.slice(1)}</button>`).join('')}
-      </div></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+      <span class="sdot ${status}" style="width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0"></span>
+      <span style="font-size:12px;color:var(--muted);text-transform:capitalize">${status} — status updates automatically</span>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">Player Availability — tap to toggle</div>
@@ -1127,23 +1133,64 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
 
   container.appendChild(pitch);
 
+  // ── Live bench with planned sub targets ──
+  const hk2=`h${half}`;
+  const lnFull=(S.gameData.lineup||{})[hk2]||{};
+  const lnBenchFor=lnFull.benchFor||[];
+  const lnBenchArr=lnFull.bench||[];
+
+  // Build a sub target map from lineup page data + any live overrides
+  // liveSubs: {playerName → {subFor, posSlot}}
+  const liveSubs=S.gameData.liveSubs?.[hk2]||{};
+
   const bench=document.createElement('div'); bench.className='live-bench-row';
-  bench.innerHTML=`<div class="blabel" style="color:rgba(255,255,255,.6)">Bench — tap to bring on</div><div class="live-bench-chips" id="live-bench-chips"></div>`;
+  const benchHdr=document.createElement('div');
+  benchHdr.innerHTML=`<div class="blabel" style="color:rgba(255,255,255,.6);margin-bottom:6px">Bench — tap name to sub on · tap arrow to set target</div>`;
+  bench.appendChild(benchHdr);
+
+  if(!benchPlayers.length){
+    const empty=document.createElement('span');
+    empty.style.cssText='color:rgba(255,255,255,.5);font-size:12px';
+    empty.textContent='No bench players available';
+    bench.appendChild(empty);
+  } else {
+    const grid=document.createElement('div');
+    grid.style.cssText='display:flex;flex-wrap:wrap;gap:6px';
+
+    benchPlayers.forEach(p=>{
+      const isUnavail=avail[p]===false;
+      // Find planned sub target: first check live override, then lineup page benchFor
+      const benchIdx=lnBenchArr.indexOf(p);
+      const plannedFor=liveSubs[p]?.subFor||(benchIdx>=0?lnBenchFor[benchIdx]:'')||'';
+
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px';
+
+      const btn=document.createElement('button');
+      btn.className='lb-chip'+(isUnavail?' unavail':'');
+      btn.textContent=isUnavail?`${p} ⚠`:p;
+      btn.onclick=()=>{
+        S.modal={type:'sub',playerOff:plannedFor||null,playerOn:p,positionSlot:null,
+                 minute:clockMinute(),clockSecs:clockElapsed()};
+        renderApp();
+      };
+
+      const lbl=document.createElement('div');
+      lbl.style.cssText=`font-size:9px;cursor:pointer;padding:2px 5px;border-radius:3px;text-align:center;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${plannedFor?'color:#ffd700;font-weight:700':'color:rgba(255,255,255,.45)'}`;
+      lbl.textContent=plannedFor?`→ ${plannedFor}`:'→ set';
+      lbl.onclick=(e)=>{
+        e.stopPropagation();
+        S.modal={type:'liveSubTarget',playerName:p,currentFor:plannedFor,half:hk2,onField};
+        renderApp();
+      };
+
+      wrap.appendChild(btn);
+      wrap.appendChild(lbl);
+      grid.appendChild(wrap);
+    });
+    bench.appendChild(grid);
+  }
   container.appendChild(bench);
-  const bc=bench.querySelector('#live-bench-chips');
-  if(!benchPlayers.length){ bc.innerHTML='<span style="color:rgba(255,255,255,.5);font-size:12px">No bench players available</span>'; }
-  benchPlayers.forEach(p=>{
-    const isUnavail=avail[p]===false;
-    const btn=document.createElement('button');
-    btn.className='lb-chip'+(isUnavail?' unavail':'');
-    btn.textContent=isUnavail?`${p} ⚠`:p;
-    btn.onclick=()=>{
-      S.modal={type:'sub',playerOff:null,playerOn:p,positionSlot:null,
-               minute:clockMinute(),clockSecs:clockElapsed()};
-      renderApp();
-    };
-    bc.appendChild(btn);
-  });
 }
 
 function renderFinalScoreCard(){
@@ -1258,10 +1305,11 @@ function renderModal(md){
   md.innerHTML='';
   const ov=document.createElement('div'); ov.className='mo';
   const box=document.createElement('div'); box.className='mb';
-  if(m.type==='sub')      buildSubModal(box);
-  else if(m.type==='goal') buildGoalModal(box);
-  else if(m.type==='note') buildNoteModal(box);
-  else if(m.type==='benchFor') buildBenchForModal(box);
+  if(m.type==='sub')          buildSubModal(box);
+  else if(m.type==='goal')       buildGoalModal(box);
+  else if(m.type==='note')       buildNoteModal(box);
+  else if(m.type==='benchFor')   buildBenchForModal(box);
+  else if(m.type==='liveSubTarget') buildLiveSubTargetModal(box);
   else if(m.type==='rosterEdit') buildRosterEditModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
@@ -1272,6 +1320,34 @@ function pGrid(field,list){
   return `<div class="psg">${list.map(p=>`
     <button class="psb ${S.modal[field]===p?'sel':''}" onclick="selectP('${field}','${p}')">${p}</button>`).join('')}</div>`;
 }
+
+function buildLiveSubTargetModal(box){
+  const m=S.modal;
+  const posArr=getPos(m.half);
+  box.innerHTML=`<div class="mt">${m.playerName} — planned sub<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Who do they replace?</div>
+    <div class="psg">
+      <button class="psb none-opt ${!m.currentFor?'sel':''}" onclick="S.modal.currentFor='';renderModal(document.getElementById('modal'))">Clear</button>
+    </div>
+    <div class="psg">${m.onField.map(p=>`
+      <button class="psb ${m.currentFor===p?'sel':''}" onclick="S.modal.currentFor='${p}';renderModal(document.getElementById('modal'))">${p}</button>`).join('')}
+    </div>
+    <div class="modal-section">Playing position <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(optional)</span></div>
+    <div class="psg" style="grid-template-columns:repeat(4,1fr)">
+      ${posArr.map(pos=>`<button class="psb ${m.posSlot===pos.id?'sel':''}" onclick="S.modal.posSlot='${pos.id}';renderModal(document.getElementById('modal'))">
+        <div style="font-size:13px;font-weight:700">${pos.tag}</div></button>`).join('')}
+    </div>
+    <button class="conf" onclick="saveLiveSubTarget()">Save</button>`;
+}
+window.saveLiveSubTarget=function(){
+  const m=S.modal;
+  if(!S.gameData.liveSubs) S.gameData.liveSubs={};
+  if(!S.gameData.liveSubs[m.half]) S.gameData.liveSubs[m.half]={};
+  const entry={subFor:m.currentFor||'',posSlot:m.posSlot||''};
+  S.gameData.liveSubs[m.half][m.playerName]=entry;
+  if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${m.half}/${m.playerName}`).set(entry);
+  closeModal();
+};
 
 function buildSubModal(box){
   const h=S.liveHalf;
