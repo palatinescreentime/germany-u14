@@ -827,13 +827,12 @@ window.showClearConfirm=function(){
 
 window.clearGameData=function(){
   if(!db) return;
-  // Preserve meta (opponent, date) — wipe all gameplay data including clock
   const cur=S.gameData.meta||{};
-  const meta={opponent:cur.opponent||'',date:cur.date||'',location:cur.location||'',notes:cur.notes||'',status:'upcoming'};
+  // Preserve opponent/date/location/notes only — wipe score, status, and all gameplay data
+  const meta={opponent:cur.opponent||'',date:cur.date||'',location:cur.location||'',notes:cur.notes||'',status:'upcoming',scoreUs:'',scoreThem:''};
   db.ref(`germany-u14/games/${S.gameId}`).set({meta});
   S.gameData={meta};
-  // Reset local clock state
-  const h=S.liveHalf-1;
+  // Reset local clock
   S.clock.elapsed=[0,0]; S.clock.startedAt=null; S.clock.running=false;
   if(clockInterval){ clearInterval(clockInterval); clockInterval=null; }
   renderApp();
@@ -1342,15 +1341,13 @@ function renderFinalScoreCard(){
       <div class="score-team">${team}</div>
       <input class="score-in" id="score-us" type="number" min="0" max="20" value="${liveUs}" oninput="liveScoreChange()">
       <div class="score-sep">–</div>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-        <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-s btn-sm" style="padding:4px 10px;font-size:14px;font-weight:700" onclick="oppGoal(-1)">−</button>
-          <button class="btn btn-p btn-sm" style="padding:4px 10px;font-size:14px;font-weight:700" onclick="oppGoal(1)">+</button>
-        </div>
-        <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${opp} goal</div>
-      </div>
+      <input class="score-in" id="score-them" type="number" min="0" max="20" value="${liveThem}" oninput="liveScoreChange()">
       <div class="score-team" style="text-align:right">${opp}</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-top:-4px;margin-bottom:10px">
+      <span style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">${opp} goal:</span>
+      <button class="btn btn-s btn-sm" style="padding:3px 12px;font-size:16px;font-weight:700;line-height:1" onclick="oppGoal(-1)" title="Remove opponent goal">−</button>
+      <button class="btn btn-p btn-sm" style="padding:3px 12px;font-size:16px;font-weight:700;line-height:1" onclick="oppGoal(1)" title="Add opponent goal">+</button>
     </div>
     ${goalsScored>liveUs?`<div style="font-size:11px;color:#d97706;margin-bottom:8px">⚠ ${goalsScored} goal${goalsScored>1?'s':''} logged — own goal or scorer untracked?</div>`:''}
     <button class="btn btn-p" style="width:100%" onclick="saveFinalScore()">Submit Final Score &amp; Unlock Report</button>
