@@ -430,7 +430,7 @@ let S = {
 
 let db=null, gameRef=null, btRef=null, clockInterval=null;
 
-function clockElapsed(){ // total seconds for current half
+function clockElapsed(){ // total seconds elapsed for current half (always positive, counts up)
   const h=S.liveHalf-1;
   if(S.clock.running && S.clock.startedAt!==null){
     return S.clock.elapsed[h] + Math.floor((Date.now()-S.clock.startedAt)/1000);
@@ -438,10 +438,15 @@ function clockElapsed(){ // total seconds for current half
   return S.clock.elapsed[h];
 }
 function clockMinute(){ return Math.floor(clockElapsed()/60); }
+function clockRemaining(){ // seconds left in half (can go negative = overtime)
+  return HALF*60 - clockElapsed();
+}
 function clockDisplay(){
-  const s=clockElapsed();
-  const m=Math.floor(s/60), sec=s%60;
-  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  const rem=clockRemaining();
+  const abs=Math.abs(rem);
+  const m=Math.floor(abs/60), s=abs%60;
+  const str=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return rem<0 ? `+${str}` : str; // show +MM:SS in overtime
 }
 window.toggleClock=function(){
   const h=S.liveHalf-1;
@@ -452,7 +457,6 @@ window.toggleClock=function(){
   } else {
     S.clock.startedAt=Date.now(); S.clock.running=true;
     clockInterval=setInterval(tickClock,1000);
-    // Auto-set status to live on first clock start
     const cur=S.gameData.meta||{};
     if(cur.status==='upcoming'||!cur.status){
       S.gameData.meta={...cur,status:'live'};
@@ -468,10 +472,38 @@ window.resetClock=function(){
   clearInterval(clockInterval); clockInterval=null;
   tickClock();
 };
+window.adjustClock=function(){
+  const was=S.clock.running;
+  // Pause if running
+  if(was){
+    const h=S.liveHalf-1;
+    S.clock.elapsed[h]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
+    S.clock.startedAt=null; S.clock.running=false;
+    clearInterval(clockInterval); clockInterval=null;
+  }
+  const elapsed=clockElapsed();
+  const currentMin=Math.floor(elapsed/60);
+  const input=prompt(`Clock is at ${clockDisplay()}.\n\nEnter the ACTUAL minute the game is at (0–${HALF}):`,''+currentMin);
+  if(input===null){ if(was) window.toggleClock(); return; } // cancelled — resume
+  const parsed=parseInt(input,10);
+  if(isNaN(parsed)||parsed<0||parsed>HALF+10){ alert('Invalid minute.'); if(was) window.toggleClock(); return; }
+  const h=S.liveHalf-1;
+  S.clock.elapsed[h]=parsed*60;
+  S.clock.startedAt=null;
+  if(was){ // resume
+    S.clock.startedAt=Date.now(); S.clock.running=true;
+    clockInterval=setInterval(tickClock,1000);
+  }
+  tickClock();
+};
 function tickClock(){
   const disp=document.getElementById('clock-disp');
   const btn=document.getElementById('clock-btn');
-  if(disp) disp.textContent=clockDisplay();
+  const rem=clockRemaining();
+  if(disp){
+    disp.textContent=clockDisplay();
+    disp.style.color=rem<0?'#ffce00':'#fff'; // gold in overtime
+  }
   if(btn){ btn.className='clock-btn '+(S.clock.running?'pause':'start'); btn.textContent=S.clock.running?'⏸':'▶'; }
 }
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
@@ -1036,10 +1068,11 @@ function renderLive(c){
     </div>
     <div class="clock-display">
       <div class="clock-time" id="clock-disp">${clockDisplay()}</div>
-      <div class="clock-sub">Half ${h} · tap ▶ to start</div>
+      <div class="clock-sub">Half ${h} · ${HALF} min · counts down</div>
     </div>
     <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()">${S.clock.running?'⏸':'▶'}</button>
-    <button class="clock-btn reset" onclick="resetClock()" title="Reset clock">↺</button>
+    <button class="clock-btn reset" onclick="adjustClock()" title="Adjust clock to actual minute" style="font-size:13px;font-weight:700">±</button>
+    <button class="clock-btn reset" onclick="resetClock()" title="Reset clock to 35:00">↺</button>
   </div>
   ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
     ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
