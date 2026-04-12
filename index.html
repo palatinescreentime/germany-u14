@@ -233,12 +233,23 @@ textarea.fi{min-height:78px;resize:vertical}
 .lchip:active .lchip-name{transform:scale(1.08)}
 .lchip-name.sub-hint{border-color:#ffd700;animation:subpulse 1.2s infinite}
 .lchip-name.sub-pending{border-color:#ffd700;border-width:2px}
+.lchip-name.field-sel{background:#2a4a8a;border-color:#60a0ff;border-width:2px}
+.field-swap-bar{background:#0a1a3a;border:2px solid #60a0ff;border-radius:8px;padding:10px 12px;margin:6px 0 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.field-swap-bar .fsb-text{flex:1;font-size:12px;color:#90c0ff;font-weight:600;width:100%;margin-bottom:6px}
 @keyframes subpulse{0%,100%{border-color:#ffd700}50%{border-color:rgba(255,215,0,.3)}}
 .live-bench-row{background:#0f0f1f;border-radius:0 0 8px 8px;padding:8px;border:2px solid #1a1a2e;border-top:none;margin-bottom:12px}
 .live-bench-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .lb-chip{background:#1a1a2e;color:#fff;padding:6px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;white-space:nowrap}
 .lb-chip.unavail{background:#7f1d1d;border-color:#fca5a5}
+.lb-chip.selected{border-color:#ffd700;background:#2a2a0a;color:#ffd700}
 .lb-chip:active{transform:scale(.96)}
+.sub-confirm-bar{background:#1a1a0a;border:2px solid #ffd700;border-radius:8px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sub-confirm-text{flex:1;font-size:12px;color:#ffd700;font-weight:600;min-width:120px}
+.sub-confirm-text span{color:rgba(255,255,255,.7);font-weight:400}
+.sub-confirm-btn{padding:6px 12px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:none;white-space:nowrap}
+.sub-confirm-btn.go{background:#cc0000;color:#fff}
+.sub-confirm-btn.change{background:rgba(255,255,255,.15);color:#fff}
+.sub-confirm-btn.cancel{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2)}
 
 /* ── Parent view ── */
 .pv-header{background:var(--gd);color:#fff;padding:14px 16px;text-align:center}
@@ -340,19 +351,22 @@ textarea.fi{min-height:78px;resize:vertical}
 .bt-grid .sumrow td{background:var(--gd)!important;color:#fff;font-weight:700}
 .season-tag-pill{display:inline-block;background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin:2px}
 @media print{
-  @page{size:landscape;margin:7mm}
-  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint{display:none!important}
-  .hd{position:static;box-shadow:none;padding:6px 10px}
-  .hd h1{font-size:13px}
+  @page{size:landscape;margin:8mm}
+  .no-print,.tabs,.hd-btn,.back-btn,.float,.print-btn-wrap,.swap-hint,.pool-wrap{display:none!important}
+  .hd{position:static;box-shadow:none;padding:8px 12px}
+  .hd h1{font-size:16px}
   .content{padding:6px 8px 0}
-  .pitch{height:260px}
-  .chip{font-size:9px;padding:3px 6px;min-width:40px}
-  .bslot .chip{font-size:9px}
-  .bench{padding:5px 7px}
-  .bslots{gap:3px}
-  .ptag{display:none}
-  .half-tabs,.sub-for-lbl{display:none}
+  .pitch{height:310px}
+  .chip{font-size:13px;padding:5px 10px;min-width:56px;font-weight:700}
+  .bslot .chip{font-size:12px;padding:4px 8px}
+  .ptag{display:block;font-size:10px;font-weight:700;color:#444;margin-bottom:2px}
+  .bench{padding:6px 8px}
+  .blabel{font-size:10px}
+  .bslots{gap:5px}
+  .sub-for-lbl{display:block!important;font-size:11px;font-weight:700;color:#cc0000;margin-top:3px}
+  .half-tabs{display:none}
   body{background:#fff}
+  .formation-picker{display:none}
 }
 </style>
 </head>
@@ -469,7 +483,7 @@ let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
   gameData:{}, allGames:{}, bagTags:{}, roster:null, teamName:'Germany U14',
   btView:'award', btGame:'g1', selected:null, modal:null,
-  pvGameId:null,
+  pvGameId:null, liveBenchSel:null, liveShowConfirm:false, liveFieldSel:null,
   clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
 
@@ -637,7 +651,11 @@ window.setBTView = function(v){ S.btView=v; renderApp(); };
 window.setBTGame = function(id){ S.btGame=id; renderApp(); };
 window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
 window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
-window.setLiveHalf = function(h){
+window.setTab=function(t){
+  if(t==='live'){ S.liveBenchSel=null; S.liveShowConfirm=false; S.liveFieldSel=null; }
+  S.tab=t; renderApp();
+};
+window.setLiveHalf=function(h){
   if(S.clock.running){
     const idx=S.liveHalf-1;
     S.clock.elapsed[idx]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
@@ -645,6 +663,7 @@ window.setLiveHalf = function(h){
     clearInterval(clockInterval); clockInterval=null;
     saveClockState();
   }
+  S.liveBenchSel=null; S.liveShowConfirm=false; S.liveFieldSel=null;
   S.liveHalf=h; renderApp();
 };
 window.closeModal = function(){ S.modal=null; renderApp(); };
@@ -937,6 +956,7 @@ function renderPitch(container) {
     const forName=bFor[i]||'';
     sf.className='sub-for-lbl'+(forName?' set':'');
     sf.textContent=forName?`→ ${forName}`:'→ set sub';
+    sf.title=forName?`Planned sub for: ${forName}`:'Tap to set planned sub';
     sf.onclick=(e)=>{ e.stopPropagation(); showBenchForModal(i); };
     slot.appendChild(sf);
     bs.appendChild(slot);
@@ -1128,8 +1148,12 @@ function renderLive(c){
   const events=sortedEvents();
 
   c.innerHTML=`
-  <!-- Clock -->
-  <div class="clock-bar">
+  ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
+    ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
+  </div>`:''}
+  <div id="live-pitch-wrap"></div>
+  <!-- Clock — below the field so pitch is first thing visible on mobile -->
+  <div class="clock-bar" style="margin-top:10px">
     <div class="clock-half-sw">
       <button class="clock-hs ${h===1?'on':''}" onclick="setLiveHalf(1)">H1</button>
       <button class="clock-hs ${h===2?'on':''}" onclick="setLiveHalf(2)">H2</button>
@@ -1143,10 +1167,6 @@ function renderLive(c){
     <button class="clock-btn reset" onclick="resetClock()" title="Reset clock to 35:00">↺</button>
     <button class="clock-btn reset" onclick="showModal('qr')" title="Parent view QR" style="font-size:14px">QR</button>
   </div>
-  ${unavailOnField.length?`<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;padding:8px 11px;border-radius:7px;font-size:12px;font-weight:700;margin-bottom:10px">
-    ⚠ Unavailable player${unavailOnField.length>1?'s':''} on field: ${unavailOnField.join(', ')}
-  </div>`:''}
-  <div id="live-pitch-wrap"></div>
   <div class="act-row">
     <button class="act act-sub" onclick="showModal('sub')">↕ Sub</button>
     <button class="act act-goal" onclick="showModal('goal')">⚽ Goal</button>
@@ -1217,51 +1237,116 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     if(!name) return;
     const isUnavail=avail[name]===false;
     const isPlanned=plannedTargets.has(name);
+    const isFieldSel=S.liveFieldSel?.name===name;
     const wrap=document.createElement('div');
     wrap.className='lchip';
     wrap.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
     wrap.innerHTML=`<div class="lchip-tag">${pos.tag}</div>
-      <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned?'sub-pending':''}">${name}${isUnavail?' ⚠':''}</div>`;
+      <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${name}${isUnavail?' ⚠':''}</div>`;
     wrap.onclick=()=>{
-      S.modal={type:'sub',playerOff:name,playerOn:null,positionSlot:pos.id,
-               minute:clockMinute(),clockSecs:clockElapsed()};
-      renderApp();
+      if(S.liveBenchSel){
+        // Bench player selected — set this as their target
+        const hk3=`h${half}`;
+        if(!S.gameData.liveSubs) S.gameData.liveSubs={};
+        if(!S.gameData.liveSubs[hk3]) S.gameData.liveSubs[hk3]={};
+        const entry={subFor:name,posSlot:pos.id};
+        S.gameData.liveSubs[hk3][S.liveBenchSel]=entry;
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk3}/${S.liveBenchSel}`).set(entry);
+        S.liveShowConfirm=false;
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else if(isFieldSel){
+        // Tap selected player again → deselect
+        S.liveFieldSel=null;
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else if(S.liveFieldSel){
+        // Another field player already selected → show swap confirm
+        S.liveFieldSel={
+          ...S.liveFieldSel,
+          targetName:name, targetSlot:pos.id, targetTag:pos.tag
+        };
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else {
+        // No selection — select this player (blue highlight)
+        S.liveFieldSel={name, slot:pos.id, tag:pos.tag};
+        S.liveShowConfirm=false;
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      }
     };
     pitch.appendChild(wrap);
   });
 
-  // Fallback: players on field with no slot assignment (edge case)
+  // Fallback: players on field with no slot
   onField.forEach(p=>{
     if(playerSlot[p]) return;
     const isUnavail=avail[p]===false;
     const isPlanned=plannedTargets.has(p);
+    const isFieldSel=S.liveFieldSel?.name===p;
     const wrap=document.createElement('div');
     wrap.className='lchip'; wrap.style.cssText=`left:50%;top:20%`;
     wrap.innerHTML=`<div class="lchip-tag">?</div>
-      <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned?'sub-pending':''}">${p}</div>`;
+      <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${p}</div>`;
     wrap.onclick=()=>{
-      S.modal={type:'sub',playerOff:p,playerOn:null,positionSlot:null,
-               minute:clockMinute(),clockSecs:clockElapsed()};
-      renderApp();
+      if(S.liveBenchSel){
+        const hk3=`h${half}`;
+        if(!S.gameData.liveSubs) S.gameData.liveSubs={};
+        if(!S.gameData.liveSubs[hk3]) S.gameData.liveSubs[hk3]={};
+        const entry={subFor:p,posSlot:null};
+        S.gameData.liveSubs[hk3][S.liveBenchSel]=entry;
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk3}/${S.liveBenchSel}`).set(entry);
+        S.liveShowConfirm=false;
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else if(isFieldSel){
+        S.liveFieldSel=null;
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else if(S.liveFieldSel){
+        S.liveFieldSel={...S.liveFieldSel, targetName:p, targetSlot:null, targetTag:'?'};
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      } else {
+        S.liveFieldSel={name:p, slot:null, tag:'?'};
+        renderLive(container.closest('.content')||document.getElementById('tab-content'));
+      }
     };
     pitch.appendChild(wrap);
   });
 
+  // Field swap confirm bar — overlaid at bottom of pitch
+  if(S.liveFieldSel?.targetName){
+    const fs=S.liveFieldSel;
+    const bar=document.createElement('div');
+    bar.style.cssText='position:absolute;bottom:6px;left:6px;right:6px;z-index:10;background:rgba(10,20,60,.95);border:2px solid #60a0ff;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap';
+    bar.innerHTML=`
+      <div style="flex:1;font-size:11px;color:#90c0ff;font-weight:600;width:100%;margin-bottom:4px">
+        Move <strong>${fs.name}</strong>${fs.tag?` (${fs.tag})`:''} ↔ <strong>${fs.targetName}</strong>${fs.targetTag&&fs.targetTag!='?'?` (${fs.targetTag})`:''}?
+      </div>
+      <button class="sub-confirm-btn go" onclick="confirmFieldSwap()">✓ Confirm</button>
+      <button class="sub-confirm-btn cancel" onclick="S.liveFieldSel=null;renderLive(document.getElementById('tab-content'))">Cancel</button>`;
+    pitch.appendChild(bar);
+  }
+
   container.appendChild(pitch);
 
-  // ── Live bench with planned sub targets ──
+  // ── Bench — new tap-select-confirm flow ──
   const hk2=`h${half}`;
   const lnFull2=(S.gameData.lineup||{})[hk2]||{};
   const lnBenchFor2=lnFull2.benchFor||[];
   const lnBenchArr=lnFull2.bench||[];
-
-  // Build a sub target map from lineup page data + any live overrides
-  // liveSubs: {playerName → {subFor, posSlot}}
   const liveSubs=S.gameData.liveSubs?.[hk2]||{};
 
   const bench=document.createElement('div'); bench.className='live-bench-row';
+
+  // Header
+  let hdrTxt, hdrColor='rgba(255,255,255,.6)';
+  if(S.liveBenchSel && S.liveShowConfirm){
+    hdrTxt=`Confirm sub or adjust who ${S.liveBenchSel} replaces`;
+    hdrColor='#ffd700';
+  } else if(S.liveBenchSel){
+    hdrTxt=`${S.liveBenchSel} selected — tap a player on the pitch to set who they replace, then tap ${S.liveBenchSel} again to confirm`;
+    hdrColor='#ffd700';
+  } else {
+    hdrTxt='Bench — tap a player to select, then tap who they replace on the pitch';
+  }
   const benchHdr=document.createElement('div');
-  benchHdr.innerHTML=`<div class="blabel" style="color:rgba(255,255,255,.6);margin-bottom:6px">Bench — tap name to sub on · tap arrow to set target</div>`;
+  benchHdr.innerHTML=`<div class="blabel" style="color:${hdrColor};margin-bottom:6px">${hdrTxt}</div>`;
   bench.appendChild(benchHdr);
 
   if(!benchPlayers.length){
@@ -1277,33 +1362,63 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
       const isUnavail=avail[p]===false;
       const benchIdx=lnBenchArr.indexOf(p);
       const plannedFor=liveSubs[p]?.subFor||(benchIdx>=0?lnBenchFor2[benchIdx]:'')||'';
+      const plannedSlot=liveSubs[p]?.posSlot||(benchIdx>=0?null:null)||'';
+      const isSel=S.liveBenchSel===p;
 
       const wrap=document.createElement('div');
       wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px';
 
       const btn=document.createElement('button');
-      btn.className='lb-chip'+(isUnavail?' unavail':'');
+      btn.className='lb-chip'+(isUnavail?' unavail':'')+(isSel?' selected':'');
       btn.textContent=isUnavail?`${p} ⚠`:p;
       btn.onclick=()=>{
-        S.modal={type:'sub',playerOff:plannedFor||null,playerOn:p,positionSlot:null,
-                 minute:clockMinute(),clockSecs:clockElapsed()};
-        renderApp();
+        if(isSel && plannedFor && !S.liveShowConfirm){
+          // Selected + has target + confirm not yet shown → show confirm bar
+          S.liveShowConfirm=true;
+          renderLive(document.getElementById('tab-content'));
+        } else if(isSel && S.liveShowConfirm){
+          // Confirm bar already showing, tapping again → just stay (bar handles actions)
+        } else if(isSel){
+          // Selected but no target yet → deselect
+          S.liveBenchSel=null; S.liveShowConfirm=false;
+          renderLive(document.getElementById('tab-content'));
+        } else {
+          // Not selected → select, clear any previous confirm state
+          S.liveBenchSel=p; S.liveShowConfirm=false;
+          renderLive(document.getElementById('tab-content'));
+        }
       };
 
+      // Sub target label
       const lbl=document.createElement('div');
-      lbl.style.cssText=`font-size:9px;cursor:pointer;padding:2px 5px;border-radius:3px;text-align:center;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${plannedFor?'color:#ffd700;font-weight:700':'color:rgba(255,255,255,.45)'}`;
+      lbl.style.cssText=`font-size:9px;cursor:pointer;padding:2px 5px;border-radius:3px;text-align:center;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${plannedFor?'color:#ffd700;font-weight:700':'color:rgba(255,255,255,.35)'}`;
       lbl.textContent=plannedFor?`→ ${plannedFor}`:'→ set';
-      lbl.onclick=(e)=>{
-        e.stopPropagation();
-        S.modal={type:'liveSubTarget',playerName:p,currentFor:plannedFor,half:hk2,onField};
-        renderApp();
-      };
 
       wrap.appendChild(btn);
       wrap.appendChild(lbl);
       grid.appendChild(wrap);
     });
     bench.appendChild(grid);
+
+    // Confirm bar — only shown when liveShowConfirm is true
+    if(S.liveBenchSel && S.liveShowConfirm && benchPlayers.includes(S.liveBenchSel)){
+      const selIdx=lnBenchArr.indexOf(S.liveBenchSel);
+      const selFor=liveSubs[S.liveBenchSel]?.subFor||(selIdx>=0?lnBenchFor2[selIdx]:'')||'';
+      const selSlot=liveSubs[S.liveBenchSel]?.posSlot||'';
+      const posTag=posArr.find(pos=>pos.id===selSlot)?.tag||'';
+      const posLabel=posTag?` · ${posTag}`:'';
+
+      const bar=document.createElement('div');
+      bar.className='sub-confirm-bar';
+      bar.innerHTML=`
+        <div class="sub-confirm-text" style="width:100%;margin-bottom:6px">
+          Subbing <strong>${S.liveBenchSel}</strong> for <strong>${selFor||'?'}</strong>${posLabel}
+        </div>
+        <button class="sub-confirm-btn go" onclick="quickConfirmSub('${S.liveBenchSel}','${selFor}','${selSlot}')">✓ Confirm</button>
+        <button class="sub-confirm-btn change" onclick="S.liveShowConfirm=false;renderLive(document.getElementById('tab-content'))">Adjust Sub</button>
+        <button class="sub-confirm-btn cancel" onclick="S.liveBenchSel=null;S.liveShowConfirm=false;renderLive(document.getElementById('tab-content'))">Cancel</button>`;
+      bench.appendChild(bar);
+    }
   }
   container.appendChild(bench);
 }
@@ -1421,7 +1536,50 @@ function evHtml(e){
 }
 
 window.delEvent=function(id){ if(confirm('Delete?')) dbRemove(`${S.gameId}/events/${id}`); };
-window.quickSub=function(playerOff){ S.modal={type:'sub',playerOff,playerOn:null,positionSlot:null,minute:clockMinute(),clockSecs:clockElapsed()}; renderApp(); };
+window.confirmFieldSwap=function(){
+  const fs=S.liveFieldSel;
+  if(!fs?.targetName) return;
+  const hk=`h${S.liveHalf}`;
+  if(!S.gameData.lineup) S.gameData.lineup={};
+  if(!S.gameData.lineup[hk]) S.gameData.lineup[hk]={};
+  const ln=S.gameData.lineup[hk];
+  if(fs.slot && fs.targetSlot){
+    ln[fs.slot]=fs.targetName;
+    ln[fs.targetSlot]=fs.name;
+  } else if(fs.slot){
+    ln[fs.slot]=fs.targetName;
+  } else if(fs.targetSlot){
+    ln[fs.targetSlot]=fs.name;
+  }
+  dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
+  S.liveFieldSel=null;
+  renderApp();
+};
+
+window.quickConfirmSub=function(playerOn, playerOff, posSlot){
+  const minute=clockMinute(), half=S.liveHalf;
+  dbPush(`${S.gameId}/events`,{type:'sub',minute,half,playerOn,playerOff,positionSlot:posSlot||null,timestamp:Date.now()});
+  // Apply to live state
+  if(!S.gameData.lineup) S.gameData.lineup={};
+  const hk=`h${half}`;
+  if(!S.gameData.lineup[hk]) S.gameData.lineup[hk]={};
+  const ln=S.gameData.lineup[hk];
+  // Find and swap slot
+  const posArr=getPos(hk);
+  let foundSlot=posSlot;
+  if(!foundSlot){
+    const entry=posArr.find(pos=>ln[pos.id]===playerOff);
+    if(entry) foundSlot=entry.id;
+  }
+  if(foundSlot){ ln[foundSlot]=playerOn; dbSet(`${S.gameId}/lineup`,S.gameData.lineup); }
+  // Clear live sub target for this player
+  if(S.gameData.liveSubs?.[hk]?.[playerOn]){
+    delete S.gameData.liveSubs[hk][playerOn];
+    if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${playerOn}`).remove();
+  }
+  S.liveBenchSel=null; S.liveShowConfirm=false;
+  renderApp();
+};
 window.showModal=function(type){
   if(type==='qr'){ S.modal={type:'qr'}; renderApp(); return; }
   if(type==='copyLineup'){ S.modal={type:'copyLineup',srcGame:null,srcHalf:'h1',dstHalf:S.lhalf}; renderApp(); return; }
@@ -1550,12 +1708,17 @@ window.confirmSub=function(){
 
 function buildGoalModal(box){
   const onF=currentOnField(S.liveHalf);
+  const allPlayers=players(); // full roster
   const m=S.modal; const ok=m.scorer;
+  // Show on-field first, then bench players, all selectable
+  const bench=allPlayers.filter(p=>!onF.includes(p));
   box.innerHTML=`<div class="mt">Goal<button class="mc" onclick="closeModal()">×</button></div>
-    <div class="modal-section">Who scored?</div>${pGrid('scorer',onF)}
+    <div class="modal-section">Who scored?</div>
+    ${onF.length?`<div style="font-size:10px;color:var(--muted);margin-bottom:4px;padding:0 2px">On field</div>${pGrid('scorer',onF)}`:''}
+    ${bench.length?`<div style="font-size:10px;color:var(--muted);margin:6px 0 4px;padding:0 2px">Bench / untracked sub</div>${pGrid('scorer',bench)}`:''}
     <div class="modal-section">Assisted by? (optional)</div>
     <div class="psg"><button class="psb none-opt ${m.assistedBy===''?'sel':''}" onclick="selectP('assistedBy','')">No assist</button></div>
-    ${pGrid('assistedBy',onF.filter(p=>p!==m.scorer))}
+    ${pGrid('assistedBy',allPlayers.filter(p=>p!==m.scorer))}
     <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 11px;background:var(--gl);border-radius:6px">
       <span style="font-size:12px;color:var(--g);font-weight:700">⏱ Min</span>
       <input class="fi" type="number" min="0" max="70" style="width:80px;padding:6px 9px;font-size:16px;font-weight:700"
