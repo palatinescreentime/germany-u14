@@ -40,7 +40,12 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:5px;background:#cc0000;color:#fff;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;border:2px solid transparent;white-space:nowrap}
 .chip.outline{border-color:#ffd700}
 .chip.navy{background:#1a1a2e}
+.chip.blue-outline{background:#1a1a2e;border-color:#60a0ff}
 .chip.danger{background:#7f1d1d;border-color:#fca5a5}
+.tag-chip{display:inline-block;padding:4px 10px;border-radius:14px;font-size:11px;font-weight:700;border:1.5px solid #e0e0e0;background:#fff;margin:2px}
+.tag-chip.awarded{background:#1a6b2f;color:#fff;border-color:#1a6b2f}
+.tag-chip.prior{background:#fff8e1;border-color:#f59e0b;color:#7c5700}
+.tag-chip.prior-game{background:#1a6b2f;color:#fff;border-color:#f59e0b;outline:2px solid #f59e0b;outline-offset:1px}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .footer{text-align:center;font-size:12px;color:#aaa;margin-top:28px;padding-top:16px;border-top:1px solid #e8e8ec}
 @media print{
@@ -75,7 +80,7 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
     </table>
     <div class="tip" style="margin-top:12px">
       <div class="tip-label">Parent view</div>
-      <div class="tip-body">Share <strong>germany.bargraph.city/?view=parent</strong> with parents. They see a tile for every game — tap any game for the live score, countdown clock, formation with player names, and match events. Use the <strong>QR button</strong> on the Live tab to share instantly on the sideline.</div>
+      <div class="tip-body">Share <strong>germany.bargraph.city/?view=parent</strong> with parents. They see a tile for every game — tap any game for the live score, countdown clock, formation with player names, and match events. Use the <strong>QR button</strong> on the Live tab to share on the sideline instantly.</div>
     </div>
   </div>
 
@@ -95,20 +100,20 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
     <ul class="guide">
       <li>Tap any game card from the season screen</li>
       <li><strong>Setup tab</strong> — enter opponent, date, location (auto-saves on exit)</li>
-      <li>Toggle <strong>availability</strong> — tap a name to mark OUT (red/strikethrough)</li>
+      <li>Toggle <strong>availability</strong> — tap a name to mark OUT</li>
       <li><strong>Coach Notes</strong> — type tactical notes and tap Save Notes</li>
       <li>Status updates automatically: Upcoming → Live when clock starts → Complete when final score submitted</li>
     </ul>
 
     <div class="subsection">Building the Lineup</div>
     <ul class="guide">
-      <li>Tap <strong>Lineup tab</strong> → choose First Half or Second Half</li>
-      <li>Pick a formation: <strong>4-3-3, 4-4-2, 4-2-3-1, 4-5-1, 3-5-2</strong> — each half independent</li>
-      <li>Tap a player in the <strong>Player Pool</strong> at the bottom, then tap a position slot to place them</li>
+      <li>Tap <strong>Lineup tab</strong> → choose First Half or Second Half — each half has its own independent lineup</li>
+      <li>Pick a formation: <strong>4-3-3, 4-4-2, 4-2-3-1, 4-5-1, 3-5-2</strong></li>
+      <li>Tap a player in the <strong>Player Pool</strong> at the bottom, then tap a position slot on the pitch to place them</li>
       <li>Tap any placed player to select, tap another to swap</li>
-      <li>Tap the <strong>arrow label</strong> below each bench player to set their planned sub target — shows as a gold outline on that player on the Live pitch</li>
+      <li>Tap the <strong>arrow label</strong> below each bench player to set their planned sub target — carries through to the Live pitch as a gold outline</li>
       <li><strong>Copy from game</strong> imports any previous lineup including bench and sub targets</li>
-      <li>Tap <strong>Print</strong> for a printable sideline sheet</li>
+      <li>Tap <strong>Print</strong> — prints larger font with position tags and planned sub targets shown</li>
     </ul>
     <div class="tip">
       <div class="tip-label">H2 rule</div>
@@ -119,6 +124,16 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
   <!-- Game Day -->
   <div class="section">
     <div class="section-title"><span class="ico">⏱</span> Game Day — Live Tab</div>
+    <p style="font-size:12px;color:#888;margin-bottom:10px">The pitch appears first on mobile. Scroll down slightly to reach the clock controls.</p>
+
+    <div class="subsection">Reading the Pitch</div>
+    <ul class="guide">
+      <li>Players shown in actual current positions, updating after every sub</li>
+      <li><strong>Gold outline</strong> on a red chip = planned sub target — that player is coming off soon</li>
+      <li><strong>Blue outline</strong> on a red chip = selected for a position swap with another field player</li>
+      <li>No outline = no sub planned for that player</li>
+      <li>Dark red + ⚠ = marked unavailable in Setup but on the pitch</li>
+    </ul>
 
     <div class="subsection">Clock</div>
     <table class="steps">
@@ -128,57 +143,88 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
       <tr><td class="ico-cell">↺</td><td class="desc">Reset to 35:00 for the new half</td></tr>
       <tr><td class="ico-cell">QR</td><td class="desc">Show QR code — parents scan to open the parent view</td></tr>
     </table>
-    <p style="font-size:12px;color:#888;margin-top:8px">Counts down from 35:00. Gold color = overtime. Parents see the same clock.</p>
+    <p style="font-size:12px;color:#888;margin-top:6px">Counts down from 35:00. Gold color = overtime. Parents see the same clock on their view.</p>
 
-    <div class="subsection">Reading the Pitch</div>
+    <div class="subsection">Making Substitutions — bench players</div>
     <ul class="guide">
-      <li>Players shown in actual positions, updating after every sub</li>
-      <li><strong>Gold outline</strong> = a bench player is planned to sub for them — coming off soon</li>
-      <li>No outline = no sub planned yet</li>
-      <li>Dark red + ⚠ = marked unavailable but on the pitch</li>
+      <li><strong>Tap 1</strong> — tap a bench player chip. It turns gold. The header updates to guide you.</li>
+      <li><strong>Tap 2</strong> — tap any player on the pitch. They become the sub target (gold arrow label updates). Bench player stays selected.</li>
+      <li><strong>Tap 3</strong> — tap the bench player again. Confirm bar appears: "Subbing <strong>Wyatt</strong> for <strong>Ryu</strong> · CM"</li>
+      <li><strong>✓ Confirm</strong> — logs the sub, updates the pitch instantly</li>
+      <li><strong>Adjust Sub</strong> — keeps bench player selected so you can tap a different field player to change the target</li>
+      <li><strong>Cancel</strong> — deselects and returns to normal</li>
     </ul>
     <div class="tip">
-      <div class="tip-label">Sub planning</div>
-      <div class="tip-body">Set sub targets on the Lineup page. Gold outlines appear automatically on the Live pitch for each targeted player — see who is coming off at a glance.</div>
+      <div class="tip-label">Pre-planned</div>
+      <div class="tip-body">If you set sub targets on the Lineup page, the bench player already has a target when you hit Tap 1 — just tap them twice total to confirm.</div>
     </div>
 
-    <div class="subsection">Making Substitutions</div>
+    <div class="subsection">Swapping field players</div>
     <ul class="guide">
-      <li>Tap any <strong>player chip on the pitch</strong> — pre-selects them to come OFF</li>
-      <li>Tap a <strong>bench player name</strong> — pre-selects them to come ON</li>
-      <li>Tap the <strong>arrow label</strong> under a bench player to update their target during the game</li>
-      <li>Clock minute auto-fills — edit if needed, then tap <strong>Confirm Sub</strong></li>
-      <li>Incoming player takes the correct position — gold outline clears</li>
+      <li><strong>Tap 1</strong> — tap any on-field player. Their chip turns <span style="color:#60a0ff;font-weight:600">blue</span>.</li>
+      <li><strong>Tap 2</strong> — tap a second on-field player. Confirm bar appears on the pitch: "Move <strong>Jonathan</strong> (ST) ↔ <strong>Ryu</strong> (CM)?"</li>
+      <li>Tap <strong>✓ Confirm</strong> to swap their positions · tap <strong>Cancel</strong> to clear</li>
+      <li>Tap the selected player again to deselect without swapping</li>
     </ul>
 
     <div class="subsection">Tracking the Score</div>
     <ul class="guide">
-      <li>Tap <strong>Goal</strong> to log scorer and optional assist — Germany score increments automatically</li>
+      <li>Tap <strong>Goal</strong> — shows all roster players split into on-field and bench. Germany score auto-increments.</li>
       <li>For <strong>opponent goals</strong>: tap the <strong>+</strong> button under the opponent score — instant, no typing</li>
       <li>Tap <strong>−</strong> to correct an accidental opponent goal entry</li>
       <li>Both scores update on the <strong>parent view immediately</strong></li>
-      <li>Edit either score manually using the number input fields at any time</li>
     </ul>
 
-    <div class="subsection">Notes</div>
+    <div class="subsection">Ending the Game</div>
     <ul class="guide">
-      <li>Tap <strong>Note</strong> to log a formation change or tactical observation with a timestamp</li>
+      <li>Scroll to the <strong>Score card</strong> on the Live tab</li>
+      <li>Confirm both scores are correct, then tap <strong>Submit Final Score &amp; Unlock Report</strong></li>
+      <li>Status changes to Complete · Report tab unlocks · game tile shows green dot on season screen</li>
     </ul>
+  </div>
+
+  <!-- Bag Tags in-game -->
+  <div class="section">
+    <div class="section-title"><span class="ico">🧱</span> Awarding Bag Tags During / After a Game</div>
+    <p style="font-size:13px;margin-bottom:10px">The <strong>🧱 Tags tab</strong> lives between Live and Report on every game. Use it to award tags without leaving the game view.</p>
+
+    <div class="subsection">Tag colors in the game Tags tab</div>
+    <table class="chip-table">
+      <thead><tr><th>Appearance</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag-chip">Ryu</span></td><td>Not yet awarded this game, never received before</td></tr>
+        <tr><td><span class="tag-chip awarded">Ryu</span></td><td>Awarded this game</td></tr>
+        <tr><td><span class="tag-chip prior">Ryu ×2</span></td><td>Not awarded this game — received 2× in prior games. Amber = deprioritize, others haven't won yet.</td></tr>
+        <tr><td><span class="tag-chip prior-game">Ryu ×3</span></td><td>Awarded this game AND received before (count = season total)</td></tr>
+      </tbody>
+    </table>
+    <ul class="guide" style="margin-top:10px">
+      <li>Tap any chip to award or remove — no limits, all tags can be awarded multiple times to any player</li>
+      <li>Badge count = season total across all games</li>
+      <li>All awards sync to the Bag Tags season tracker automatically</li>
+    </ul>
+
+    <div class="subsection">Current tag list</div>
+    <table class="chip-table">
+      <thead><tr><th>Tag</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>⚽ First Goal</td><td>Goal scorer award</td></tr>
+        <tr><td>💪 Fleißig</td><td>Outstanding effort and work rate</td></tr>
+        <tr><td>🦴 Hungry</td><td>Relentless effort and desire</td></tr>
+        <tr><td>🧤 Shot Stopper</td><td>Outstanding save or goalkeeping performance</td></tr>
+        <tr><td>📢 Loudest</td><td>Vocal leader on and off the ball</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- After Game -->
   <div class="section">
     <div class="section-title"><span class="ico">✅</span> After the Game</div>
     <table class="steps">
-      <tr><td class="num">1</td><td class="desc">Tap <strong>Submit Final Score</strong> on the Live tab — unlocks Report, marks game complete</td></tr>
+      <tr><td class="num">1</td><td class="desc">Submit Final Score on the Live tab — unlocks Report, marks game Complete</td></tr>
       <tr><td class="num">2</td><td class="desc"><strong>Report tab</strong> — playing time bars, goals &amp; assists, full match log</td></tr>
-      <tr><td class="num">3</td><td class="desc">Tap <strong>Bag Tags</strong> from the season screen to award tags</td></tr>
-      <tr><td class="num">4</td><td class="desc"><strong>Hardest Worker alert</strong> shows who still needs that tag this season</td></tr>
+      <tr><td class="num">3</td><td class="desc">Award bag tags on the <strong>🧱 Tags tab</strong> (in-game) or via <strong>Bag Tags</strong> on the season screen</td></tr>
     </table>
-    <div class="tip" style="margin-top:12px">
-      <div class="tip-label">Clean Sheet</div>
-      <div class="tip-body">If Germany kept a shutout, a banner on the Bag Tags page awards Clean Sheet to the whole team in one tap.</div>
-    </div>
   </div>
 
   <!-- Two-col -->
@@ -187,28 +233,22 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
       <div class="section-title"><span class="ico">👥</span> Parent View</div>
       <ul class="guide">
         <li>URL: <strong>germany.bargraph.city/?view=parent</strong></li>
-        <li>Shows a tile for every game — tap to view formation, score, clock, and events</li>
-        <li>Pitch updates as subs are made in real time</li>
-        <li>Score updates instantly when you log a goal or tap + for an opponent goal</li>
-        <li>Auto-refreshes every 20 seconds — parents do nothing</li>
+        <li>Game tile grid — tap any game to see formation, score, clock, and events</li>
+        <li>Pitch updates as subs are made · score updates instantly on goal or + tap</li>
+        <li>Auto-refreshes every 20 seconds</li>
       </ul>
     </div>
     <div class="section">
-      <div class="section-title"><span class="ico">🧱</span> Bag Tags</div>
+      <div class="section-title"><span class="ico">📊</span> Bag Tags &amp; Stats</div>
       <ul class="guide">
-        <li><strong>Award Tags</strong> — select game, tap chips to award. Strikethrough = already received this season.</li>
-        <li><strong>Season Grid</strong> — full table. Yellow rows = still need Hardest Worker.</li>
-      </ul>
-      <div style="height:12px"></div>
-      <div class="section-title" style="margin-top:8px"><span class="ico">📊</span> Season Stats</div>
-      <ul class="guide">
-        <li>Unlocks after first completed game</li>
-        <li>Cumulative minutes, goals, assists per player</li>
+        <li><strong>Bag Tags → Award Tags</strong> — select game, tap player chips. Season total shown as ×N.</li>
+        <li><strong>Season Grid</strong> — full player × tag table with counts</li>
+        <li><strong>Season Stats</strong> — unlocks after first completed game. Cumulative minutes, goals, assists.</li>
       </ul>
     </div>
   </div>
 
-  <!-- Chip Colors -->
+  <!-- Chip reference -->
   <div class="section">
     <div class="section-title"><span class="ico">🎨</span> Quick Reference — Live Pitch Chip Colors</div>
     <table class="chip-table">
@@ -216,8 +256,9 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
       <tbody>
         <tr><td><span class="chip">Ryu</span></td><td>On-field player — no planned sub</td></tr>
         <tr><td><span class="chip outline">Ryu</span></td><td><strong>Gold outline</strong> — bench player is planned to replace them</td></tr>
-        <tr><td><span class="chip navy">Wyatt</span></td><td>Bench player — no sub target set</td></tr>
-        <tr><td><span class="chip navy outline">Wyatt →</span></td><td>Bench player with planned sub target (gold arrow label)</td></tr>
+        <tr><td><span class="chip blue-outline">Ryu</span></td><td><strong>Blue outline</strong> — selected for a position swap (tap another field player)</td></tr>
+        <tr><td><span class="chip navy">Wyatt</span></td><td>Bench player — selected, no sub target set yet</td></tr>
+        <tr><td><span class="chip navy outline">Wyatt →</span></td><td>Bench player with planned sub target set</td></tr>
         <tr><td><span class="chip danger">Anish ⚠</span></td><td>Marked unavailable but on the pitch — double check</td></tr>
       </tbody>
     </table>
@@ -225,7 +266,7 @@ ul.guide li strong{color:#0f0f1f;font-weight:600}
 
   <div class="section" style="border-color:#fca5a5">
     <div class="section-title" style="color:#b91c1c"><span class="ico">🗑</span> Clearing Game Data</div>
-    <p style="font-size:13px">Setup tab → <strong>Danger Zone</strong> → <strong>Clear Game Data</strong>. Two-step confirmation. Clears lineup, events, and score — keeps opponent name and date.</p>
+    <p style="font-size:13px">Setup tab → <strong>Danger Zone</strong> → <strong>Clear Game Data</strong>. Resets lineup, events, score, status, and clock. Keeps opponent name, date, location, and notes.</p>
   </div>
 
   <div class="footer">Germany U14 &nbsp;·&nbsp; Palatine Celtic SC &nbsp;·&nbsp; Spring 2026 &nbsp;·&nbsp; germany.bargraph.city</div>
