@@ -338,6 +338,21 @@ textarea.fi{min-height:78px;resize:vertical}
 .tc.awarded{background:var(--g);color:#fff;border-color:var(--g)}
 .tc.done{background:#f0f0f0;color:#aaa;border-color:#ddd;cursor:default;text-decoration:line-through;opacity:.6}
 .tc.team-on{background:var(--g);color:#fff;border-color:var(--g)}
+
+/* ── Game tags tab ── */
+.gt-table{width:100%;border-collapse:collapse;font-size:12px}
+.gt-table th{background:var(--gd);color:#fff;padding:8px 6px;font-size:11px;text-align:center;white-space:nowrap;position:sticky;top:0}
+.gt-table th.gt-name{text-align:left;padding-left:10px;min-width:90px}
+.gt-table td{padding:7px 5px;border-bottom:1px solid var(--border);text-align:center;vertical-align:middle}
+.gt-table td.gt-name{text-align:left;font-weight:700;padding-left:10px;font-size:12px}
+.gt-table tr:nth-child(even) td{background:var(--gl)}
+/* Tag button states */
+.gt-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:14px;transition:all .15s;position:relative}
+.gt-btn:active{transform:scale(.9)}
+.gt-btn.this-game{background:var(--g);border-color:var(--g)}  /* awarded this game */
+.gt-btn.prior{background:#fff8e1;border-color:#f59e0b}        /* received in a prior game */
+.gt-btn.prior-and-game{background:var(--g);border-color:var(--g);outline:3px solid #f59e0b;outline-offset:1px} /* both */
+.gt-count{position:absolute;top:-4px;right:-4px;background:#f59e0b;color:#fff;font-size:8px;font-weight:700;border-radius:10px;padding:0 3px;min-width:13px;line-height:13px;text-align:center}
 .grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);border:1px solid var(--border)}
 .bt-grid{border-collapse:collapse;font-size:12px;width:100%;min-width:560px}
 .bt-grid th{background:var(--g);color:#fff;padding:8px 7px;text-align:center;font-size:11px;white-space:nowrap}
@@ -448,14 +463,11 @@ const GAMES = [
 const HALF = 35;
 
 const TAGS = [
-  {id:'firstGoal',     label:'First Goal',    icon:'⚽', once:true,  team:false, desc:"Each player's first goal of the season"},
-  {id:'hatTrick',      label:'Hat Trick',     icon:'🎩', once:false, team:false, desc:'3+ goals in one game'},
-  {id:'hardestWorker', label:'Hardest Worker',icon:'💪', once:true,  team:false, desc:'Every player gets this exactly once all season'},
+  {id:'firstGoal',     label:'First Goal',    icon:'⚽', once:false, team:false, desc:'Goal scorer award'},
+  {id:'hardestWorker', label:'Fleißig',       icon:'💪', once:false, team:false, desc:'Outstanding effort and work rate'},
   {id:'hungry',        label:'Hungry',        icon:'🦴', once:false, team:false, desc:'Relentless effort and desire'},
-  {id:'brickWall',     label:'Brick Wall',    icon:'🧱', once:false, team:false, desc:'Defensive standout'},
-  {id:'clutch',        label:'Clutch',        icon:'⚡', once:false, team:false, desc:'Performs under pressure in a tight moment'},
+  {id:'shotStopper',   label:'Shot Stopper',  icon:'🧤', once:false, team:false, desc:'Outstanding save or goalkeeping performance'},
   {id:'loudest',       label:'Loudest',       icon:'📢', once:false, team:false, desc:'Vocal leader on and off the ball'},
-  {id:'cleanSheet',    label:'Clean Sheet',   icon:'🧤', once:false, team:true,  desc:'Whole team awarded on a shutout'},
 ];
 
 const PLAYER_DATA = [
@@ -728,6 +740,7 @@ function gameCard(g) {
 function renderGame(a) {
   const gdef=GAMES.find(g=>g.id===S.gameId)||{};
   const opp=S.gameData.meta?.opponent||gdef.label;
+  const hasScore=S.gameData.meta?.scoreUs!==undefined&&S.gameData.meta?.scoreUs!=='';
   a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
@@ -736,18 +749,17 @@ function renderGame(a) {
   <div class="tabs no-print">
     ${['setup','lineup','live'].map(t=>`
       <button class="tab ${S.tab===t?'on':''}" onclick="setTab('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
-    ${(()=>{
-      const hasScore = S.gameData.meta?.scoreUs !== undefined && S.gameData.meta?.scoreUs !== '';
-      return `<button class="tab ${S.tab==='report'?'on':''} ${!hasScore?'locked':''}"
-        onclick="${hasScore?"setTab('report')":''}" title="${!hasScore?'Enter final score on Live tab to unlock':''}">
-        Report ${!hasScore?'🔒':''}</button>`;
-    })()}
+    <button class="tab ${S.tab==='tags'?'on':''}" onclick="setTab('tags')">🧱 Tags</button>
+    <button class="tab ${S.tab==='report'?'on':''} ${!hasScore?'locked':''}"
+      onclick="${hasScore?"setTab('report')":''}" title="${!hasScore?'Enter final score on Live tab to unlock':''}">
+      Report ${!hasScore?'🔒':''}</button>
   </div>
   <div class="content" id="tab-content"></div>`;
   const tc=document.getElementById('tab-content');
   if(S.tab==='setup')  renderSetup(tc);
   if(S.tab==='lineup') renderLineup(tc);
   if(S.tab==='live')   renderLive(tc);
+  if(S.tab==='tags')   renderGameTags(tc);
   if(S.tab==='report') renderReport(tc);
 }
 
@@ -2024,25 +2036,86 @@ window.toggleTag=function(gameId,tagId,player){
   if(!S.bagTags[gameId]) S.bagTags[gameId]={};
   const cur=[...(S.bagTags[gameId][tagId]||[])];
   const idx=cur.indexOf(player);
-  // Guard once-per-season tags
-  const tag=TAGS.find(t=>t.id===tagId);
-  if(tag?.once && idx<0 && seasonAwardees(tagId).has(player)){
-    alert(`${player} already has ${tag.label} this season.`); return;
-  }
   if(idx>=0) cur.splice(idx,1); else cur.push(player);
   S.bagTags[gameId][tagId]=cur;
   btSet(`${gameId}/${tagId}`,cur);
   renderApp();
 };
 
-window.awardCleanSheet=function(gameId){
+// ── Game Tags tab (inline per-game bag tag tracker) ───────────────────
+function renderGameTags(c){
+  const gameId=S.gameId;
   if(!S.bagTags[gameId]) S.bagTags[gameId]={};
-  const cur=S.bagTags[gameId]['cleanSheet']||[];
-  const allOn=players().every(p=>cur.includes(p));
-  const next=allOn?[]:([...players()]);
-  S.bagTags[gameId]['cleanSheet']=next;
-  btSet(`${gameId}/cleanSheet`,next);
-  renderApp();
+  const gameTags=S.bagTags[gameId]||{};
+
+  // Build season counts excluding this game
+  function priorCount(player, tagId){
+    return Object.entries(S.bagTags)
+      .filter(([gid])=>gid!==gameId)
+      .reduce((n,[,g])=>n+((g[tagId]||[]).includes(player)?1:0),0);
+  }
+  function thisGameAwarded(player, tagId){
+    return (gameTags[tagId]||[]).includes(player);
+  }
+
+  // Tag headers
+  const thCols=TAGS.map(t=>`<th title="${t.desc}">${t.icon}<br><span style="font-size:9px">${t.label}</span></th>`).join('');
+
+  // Player rows
+  const rows=players().map(p=>{
+    const cells=TAGS.map(tag=>{
+      const inGame=thisGameAwarded(p,tag.id);
+      const prior=priorCount(p,tag.id);
+      const totalSeason=prior+(inGame?1:0);
+
+      let cls='gt-btn';
+      if(inGame&&prior>0) cls+=' prior-and-game';
+      else if(inGame)     cls+=' this-game';
+      else if(prior>0)    cls+=' prior';
+
+      // For once-tags, show count as season total; for multi-tags show season total
+      const countBadge=totalSeason>0?`<span class="gt-count">${totalSeason}</span>`:'';
+
+      return `<td><button class="${cls}" onclick="toggleGameTag('${gameId}','${tag.id}','${p}')" title="${tag.label} — ${p}${prior>0?` (${prior}× before)`:''}">
+        ${tag.icon}${countBadge}
+      </button></td>`;
+    }).join('');
+    return `<tr><td class="gt-name">${p}</td>${cells}</tr>`;
+  }).join('');
+
+  c.innerHTML=`
+  <div style="margin-bottom:10px;font-size:12px;color:var(--muted);line-height:1.7">
+    <span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px">
+      <span style="width:18px;height:18px;border-radius:50%;background:var(--g);display:inline-block"></span> Awarded this game
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px">
+      <span style="width:18px;height:18px;border-radius:50%;background:#fff8e1;border:2px solid #f59e0b;display:inline-block"></span> Received before
+    </span>
+    <span style="display:inline-flex;align-items:center;gap:5px">
+      <span style="width:18px;height:18px;border-radius:50%;background:var(--g);outline:3px solid #f59e0b;outline-offset:1px;display:inline-block"></span> Awarded this game + received before
+    </span>
+  </div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Badge count = season total · tap to award / remove</div>
+  <div class="grid-wrap">
+    <table class="gt-table">
+      <thead><tr>
+        <th class="gt-name">Player</th>
+        ${thCols}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+window.toggleGameTag=function(gameId,tagId,player){
+  if(!S.bagTags[gameId]) S.bagTags[gameId]={};
+  const cur=[...(S.bagTags[gameId][tagId]||[])];
+  const idx=cur.indexOf(player);
+  if(idx>=0) cur.splice(idx,1); else cur.push(player);
+  S.bagTags[gameId][tagId]=cur;
+  btSet(`${gameId}/${tagId}`,cur);
+  const tc=document.getElementById('tab-content');
+  if(tc) renderGameTags(tc);
 };
 
 // ── Bag Tags view ──────────────────────────────────────────────────────
@@ -2065,16 +2138,6 @@ function renderBagTags(a){
 }
 
 function renderBTAward(c){
-  const gd=S.allGames[S.btGame]||{};
-  const opp=gd.meta?.opponent||S.btGame;
-  const isShutout=gd.meta?.scoreUs!==undefined&&+gd.meta.scoreThem===0&&gd.meta.scoreThem!=='';
-  const csArr=gtAwardees(S.btGame,'cleanSheet');
-  const csAllAwarded=players().every(p=>csArr.includes(p));
-
-  // Who still needs Hardest Worker
-  const hwHas=seasonAwardees('hardestWorker');
-  const hwNeeds=players().filter(p=>!hwHas.has(p));
-
   const gameOpts=GAMES.map(g=>{
     const d=S.allGames[g.id]||{};
     const label=d.meta?.opponent?`${g.label} — ${d.meta.opponent}`:g.label;
@@ -2083,14 +2146,6 @@ function renderBTAward(c){
 
   c.innerHTML=`
     <select class="bt-game-sel" onchange="setBTGame(this.value)">${gameOpts}</select>
-    ${hwNeeds.length?`<div class="hw-alert">
-      <strong>💪 Hardest Worker — ${hwNeeds.length} player${hwNeeds.length>1?'s':''} still need this tag</strong>
-      ${hwNeeds.join(', ')}
-    </div>`:'<div style="background:var(--gl);border:1px solid var(--g);color:var(--g);padding:8px 12px;border-radius:8px;margin-bottom:14px;font-size:12px;font-weight:700">✓ All 17 players have received Hardest Worker</div>'}
-    ${isShutout&&!csAllAwarded?`<div class="cs-banner">
-      <span>🧤 This was a shutout — award Clean Sheet to whole team?</span>
-      <button class="btn btn-p btn-sm" onclick="awardCleanSheet('${S.btGame}')">Award All</button>
-    </div>`:''}
     <div id="tag-sections"></div>`;
 
   const ts=document.getElementById('tag-sections');
@@ -2102,60 +2157,35 @@ function renderBTAward(c){
       <span class="tag-desc">${tag.desc}</span>`;
     sec.appendChild(hdr);
 
-    if(tag.team){
-      // Clean sheet — single button for whole team
+    const chips=document.createElement('div'); chips.className='tag-chips';
+    const gameAwardees=gtAwardees(S.btGame,tag.id);
+    players().forEach(p=>{
+      const awarded=gameAwardees.includes(p);
+      const seasonTotal=playerTagCount(p,tag.id);
       const btn=document.createElement('button');
-      btn.className='tc'+(csAllAwarded?' team-on':'');
-      btn.textContent=csAllAwarded?'✓ Awarded to whole team':'Tap to award to whole team';
-      btn.onclick=()=>awardCleanSheet(S.btGame);
-      sec.appendChild(btn);
-    } else {
-      const chips=document.createElement('div'); chips.className='tag-chips';
-      const gameAwardees=gtAwardees(S.btGame,tag.id);
-      const seasonHas=tag.once?seasonAwardees(tag.id):null;
-
-      players().forEach(p=>{
-        const awarded=gameAwardees.includes(p);
-        // For once tags: if awarded in ANOTHER game, show as done
-        const seasonDone=tag.once&&!awarded&&seasonHas?.has(p);
-        const btn=document.createElement('button');
-        btn.className='tc'+(awarded?' awarded':'')+(seasonDone?' done':'');
-        btn.textContent=p;
-        btn.title=seasonDone?`Already received ${tag.label} this season`:'';
-        if(!seasonDone) btn.onclick=()=>toggleTag(S.btGame,tag.id,p);
-        chips.appendChild(btn);
-      });
-      sec.appendChild(chips);
-    }
+      btn.className='tc'+(awarded?' awarded':'');
+      btn.textContent=seasonTotal>0?`${p} ×${seasonTotal}`:p;
+      btn.title=`Season total: ${seasonTotal}`;
+      btn.onclick=()=>toggleTag(S.btGame,tag.id,p);
+      chips.appendChild(btn);
+    });
+    sec.appendChild(chips);
     ts.appendChild(sec);
   });
 }
 
 function renderBTGrid(c){
-  const hwHas=seasonAwardees('hardestWorker');
-  // Build totals
   const totals={};
   TAGS.forEach(t=>totals[t.id]=0);
 
   const rows=players().map(p=>{
-    const needsHW=!hwHas.has(p);
     let cells='';
     TAGS.forEach(tag=>{
-      if(tag.team){
-        const count=Object.values(S.bagTags).filter(g=>(g['cleanSheet']||[]).includes(p)).length;
-        if(count>0) totals[tag.id]+=count;
-        cells+=count?`<td class="has">${count}</td>`:`<td class="none">—</td>`;
-      } else if(tag.once){
-        const has=seasonAwardees(tag.id).has(p);
-        if(has) totals[tag.id]++;
-        cells+=has?`<td class="has">✓</td>`:`<td class="none">—</td>`;
-      } else {
-        const count=playerTagCount(p,tag.id);
-        if(count>0) totals[tag.id]+=count;
-        cells+=count?`<td class="has">${count}</td>`:`<td class="none">—</td>`;
-      }
+      const count=playerTagCount(p,tag.id);
+      if(count>0) totals[tag.id]+=count;
+      cells+=count?`<td class="has">${count}</td>`:`<td class="none">—</td>`;
     });
-    return `<tr class="${needsHW?'needshw':''}"><td class="pc">${p}${needsHW?'<span style="font-size:9px;color:#856404;margin-left:4px">needs 💪</span>':''}</td>${cells}</tr>`;
+    return `<tr><td class="pc">${p}</td>${cells}</tr>`;
   }).join('');
 
   const sumCells=TAGS.map(t=>`<td>${totals[t.id]||'—'}</td>`).join('');
@@ -2176,7 +2206,7 @@ function renderBTGrid(c){
     </div>
   </div>
   <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6">
-    ✓ = awarded once &nbsp;·&nbsp; number = times awarded &nbsp;·&nbsp; yellow row = needs Hardest Worker
+    Number = times awarded this season &nbsp;·&nbsp; — = not yet received
   </div>`;
 }
 
