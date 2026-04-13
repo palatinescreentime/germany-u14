@@ -448,7 +448,7 @@ function getPos(half){ // returns position array for the current or given half
 // Legacy alias so computePT and other cross-game code always has a position list
 const POS_ALL_IDS = ['fwL','fwC','fwR','cmL','cmC','cmR','fbL','cbL','cbR','fbR','gk'];
 
-const GAMES = [
+let GAMES = [
   {id:'g1',label:'Game 1',type:'regular'},
   {id:'g2',label:'Game 2',type:'regular'},
   {id:'g3',label:'Game 3',type:'regular'},
@@ -625,6 +625,16 @@ function initFB() {
       S.teamName = s.val() || 'Germany U14';
       render();
     });
+    db.ref('germany-u14/schedule').on('value', s => {
+      const val = s.val();
+      if(val && Array.isArray(val) && val.length > 0){
+        GAMES = val;
+      } else {
+        // Seed default schedule to Firebase on first load
+        db.ref('germany-u14/schedule').set(GAMES);
+      }
+      if(S.view==='season'||S.view==='parent') render();
+    });
   } catch(e) { console.error(e); }
   render();
 }
@@ -650,6 +660,7 @@ function rosterSet(id,val){ if(db) db.ref('germany-u14/roster/'+id).set(val); }
 function rosterRemove(id){ if(db) db.ref('germany-u14/roster/'+id).remove(); }
 function rosterPush(val){ if(db) db.ref('germany-u14/roster').push(val); }
 function teamNameSet(name){ if(db) db.ref('germany-u14/teamName').set(name); }
+function scheduleSet(games){ if(db) db.ref('germany-u14/schedule').set(games); }
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
   S.view=view; S.gameId=gid||null; S.tab=tab||'setup';
@@ -703,6 +714,7 @@ function renderSeason(a) {
     <h1>${S.teamName} · Season Manager</h1>
     <button class="hd-btn" onclick="goToRoster()" style="background:rgba(255,255,255,.15);margin-right:4px">👥 Roster</button>
     <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:4px">🧱 Bag Tags</button>
+    <button class="hd-btn" onclick="showModal('schedule')" style="background:rgba(255,255,255,.1);margin-right:4px">📅 Schedule</button>
     ${(()=>{
       const anyDone=Object.values(S.allGames).some(g=>g?.meta?.status==='complete');
       return anyDone
@@ -1219,17 +1231,35 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
   const {posMap,playerSlot}=buildCurrentPositions(ln,half);
   container.innerHTML='';
 
-  // Build set of on-field players who have a planned sub coming
+  // Hoist bench/liveSub data so on-field chip handlers can access for one-to-one check
   const lnFull=(S.gameData.lineup||{})[hk]||{};
   const lnBenchArr1=lnFull.bench||[];
   const lnBenchFor=lnFull.benchFor||[];
   const liveSubs2=S.gameData.liveSubs?.[hk]||{};
+
+  // Helper: get effective sub target for any bench player
+  function effectiveTarget(bp){
+    if(liveSubs2[bp]?.subFor) return liveSubs2[bp].subFor;
+    const i=lnBenchArr1.indexOf(bp);
+    return i>=0?lnBenchFor[i]:'';
+  }
+
+  // Helper: which bench player (if any) is currently targeting a given field player?
+  function whoTargets(fieldPlayer){
+    return benchPlayers.find(bp=>effectiveTarget(bp)===fieldPlayer&&bp!==S.liveBenchSel)||null;
+  }
+
+  // Helper: clear an assignment from liveSubs + Firebase
+  function clearLiveSub(bp){
+    if(S.gameData.liveSubs?.[hk]?.[bp]){
+      delete S.gameData.liveSubs[hk][bp];
+      if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${bp}`).remove();
+    }
+  }
+
+  // Build planned targets set for gold outline on pitch
   const plannedTargets=new Set();
-  benchPlayers.forEach(p=>{
-    const benchIdx=lnBenchArr1.indexOf(p);
-    const target=liveSubs2[p]?.subFor||(benchIdx>=0?lnBenchFor[benchIdx]:'')||'';
-    if(target) plannedTargets.add(target);
-  });
+  benchPlayers.forEach(p=>{ const t=effectiveTarget(p); if(t) plannedTargets.add(t); });
 
   const pitch=document.createElement('div');
   pitch.className='live-pitch';
@@ -1257,28 +1287,28 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
       <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${name}${isUnavail?' ⚠':''}</div>`;
     wrap.onclick=()=>{
       if(S.liveBenchSel){
-        // Bench player selected — set this as their target
-        const hk3=`h${half}`;
+        // Bench player selected — set this field player as their target
+        // One-to-one rule: check if another bench player already targets this field player
+        const existing=whoTargets(name);
+        if(existing){
+          if(!confirm(`${name} is already set as a sub for ${existing}.\nOverride and assign to ${S.liveBenchSel} instead?`)) return;
+          // Clear the previous bench player's assignment
+          clearLiveSub(existing);
+        }
         if(!S.gameData.liveSubs) S.gameData.liveSubs={};
-        if(!S.gameData.liveSubs[hk3]) S.gameData.liveSubs[hk3]={};
+        if(!S.gameData.liveSubs[hk]) S.gameData.liveSubs[hk]={};
         const entry={subFor:name,posSlot:pos.id};
-        S.gameData.liveSubs[hk3][S.liveBenchSel]=entry;
-        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk3}/${S.liveBenchSel}`).set(entry);
+        S.gameData.liveSubs[hk][S.liveBenchSel]=entry;
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${S.liveBenchSel}`).set(entry);
         S.liveShowConfirm=false;
         renderLive(container.closest('.content')||document.getElementById('tab-content'));
       } else if(isFieldSel){
-        // Tap selected player again → deselect
         S.liveFieldSel=null;
         renderLive(container.closest('.content')||document.getElementById('tab-content'));
       } else if(S.liveFieldSel){
-        // Another field player already selected → show swap confirm
-        S.liveFieldSel={
-          ...S.liveFieldSel,
-          targetName:name, targetSlot:pos.id, targetTag:pos.tag
-        };
+        S.liveFieldSel={...S.liveFieldSel, targetName:name, targetSlot:pos.id, targetTag:pos.tag};
         renderLive(container.closest('.content')||document.getElementById('tab-content'));
       } else {
-        // No selection — select this player (blue highlight)
         S.liveFieldSel={name, slot:pos.id, tag:pos.tag};
         S.liveShowConfirm=false;
         renderLive(container.closest('.content')||document.getElementById('tab-content'));
@@ -1299,12 +1329,16 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
       <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${p}</div>`;
     wrap.onclick=()=>{
       if(S.liveBenchSel){
-        const hk3=`h${half}`;
+        const existing=whoTargets(p);
+        if(existing){
+          if(!confirm(`${p} is already set as a sub for ${existing}.\nOverride and assign to ${S.liveBenchSel} instead?`)) return;
+          clearLiveSub(existing);
+        }
         if(!S.gameData.liveSubs) S.gameData.liveSubs={};
-        if(!S.gameData.liveSubs[hk3]) S.gameData.liveSubs[hk3]={};
+        if(!S.gameData.liveSubs[hk]) S.gameData.liveSubs[hk]={};
         const entry={subFor:p,posSlot:null};
-        S.gameData.liveSubs[hk3][S.liveBenchSel]=entry;
-        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk3}/${S.liveBenchSel}`).set(entry);
+        S.gameData.liveSubs[hk][S.liveBenchSel]=entry;
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${S.liveBenchSel}`).set(entry);
         S.liveShowConfirm=false;
         renderLive(container.closest('.content')||document.getElementById('tab-content'));
       } else if(isFieldSel){
@@ -1337,12 +1371,12 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
 
   container.appendChild(pitch);
 
-  // ── Bench — new tap-select-confirm flow ──
-  const hk2=`h${half}`;
-  const lnFull2=(S.gameData.lineup||{})[hk2]||{};
+  // ── Bench — tap-select-confirm flow ──
+  // lnBenchArr1, lnBenchFor, liveSubs2 already declared above
+  const lnFull2=(S.gameData.lineup||{})[hk]||{};  // same as lnFull but alias for clarity
   const lnBenchFor2=lnFull2.benchFor||[];
   const lnBenchArr=lnFull2.bench||[];
-  const liveSubs=S.gameData.liveSubs?.[hk2]||{};
+  const liveSubs=S.gameData.liveSubs?.[hk]||{};
 
   const bench=document.createElement('div'); bench.className='live-bench-row';
 
@@ -1384,18 +1418,22 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
       btn.className='lb-chip'+(isUnavail?' unavail':'')+(isSel?' selected':'');
       btn.textContent=isUnavail?`${p} ⚠`:p;
       btn.onclick=()=>{
-        if(isSel && plannedFor && !S.liveShowConfirm){
-          // Selected + has target + confirm not yet shown → show confirm bar
+        if(isSel && S.liveShowConfirm){
+          // Confirm bar already showing — do nothing (bar buttons handle it)
+        } else if(isSel && plannedFor){
+          // Selected + target set → show confirm bar
           S.liveShowConfirm=true;
           renderLive(document.getElementById('tab-content'));
-        } else if(isSel && S.liveShowConfirm){
-          // Confirm bar already showing, tapping again → just stay (bar handles actions)
         } else if(isSel){
           // Selected but no target yet → deselect
           S.liveBenchSel=null; S.liveShowConfirm=false;
           renderLive(document.getElementById('tab-content'));
+        } else if(plannedFor){
+          // Not selected BUT already has a target → single tap goes straight to confirm
+          S.liveBenchSel=p; S.liveShowConfirm=true;
+          renderLive(document.getElementById('tab-content'));
         } else {
-          // Not selected → select, clear any previous confirm state
+          // Not selected, no target → select so coach can tap field player
           S.liveBenchSel=p; S.liveShowConfirm=false;
           renderLive(document.getElementById('tab-content'));
         }
@@ -1571,12 +1609,10 @@ window.confirmFieldSwap=function(){
 window.quickConfirmSub=function(playerOn, playerOff, posSlot){
   const minute=clockMinute(), half=S.liveHalf;
   dbPush(`${S.gameId}/events`,{type:'sub',minute,half,playerOn,playerOff,positionSlot:posSlot||null,timestamp:Date.now()});
-  // Apply to live state
   if(!S.gameData.lineup) S.gameData.lineup={};
   const hk=`h${half}`;
   if(!S.gameData.lineup[hk]) S.gameData.lineup[hk]={};
   const ln=S.gameData.lineup[hk];
-  // Find and swap slot
   const posArr=getPos(hk);
   let foundSlot=posSlot;
   if(!foundSlot){
@@ -1584,17 +1620,30 @@ window.quickConfirmSub=function(playerOn, playerOff, posSlot){
     if(entry) foundSlot=entry.id;
   }
   if(foundSlot){ ln[foundSlot]=playerOn; dbSet(`${S.gameId}/lineup`,S.gameData.lineup); }
-  // Clear live sub target for this player
+
+  // Clear live sub target for playerOn (now on field)
   if(S.gameData.liveSubs?.[hk]?.[playerOn]){
     delete S.gameData.liveSubs[hk][playerOn];
     if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${playerOn}`).remove();
   }
+
+  // Auto-cleanup: remove any sub targets pointing to playerOff (now on bench — bench can't target bench)
+  if(S.gameData.liveSubs?.[hk]){
+    Object.entries(S.gameData.liveSubs[hk]).forEach(([bp,entry])=>{
+      if(entry.subFor===playerOff){
+        delete S.gameData.liveSubs[hk][bp];
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${bp}`).remove();
+      }
+    });
+  }
+
   S.liveBenchSel=null; S.liveShowConfirm=false;
   renderApp();
 };
 window.showModal=function(type){
   if(type==='qr'){ S.modal={type:'qr'}; renderApp(); return; }
   if(type==='copyLineup'){ S.modal={type:'copyLineup',srcGame:null,srcHalf:'h1',dstHalf:S.lhalf}; renderApp(); return; }
+  if(type==='schedule'){ S.modal={type:'schedule'}; renderApp(); return; }
   S.modal={type,playerOff:null,playerOn:null,positionSlot:null,scorer:null,assistedBy:null,minute:clockMinute(),clockSecs:clockElapsed(),text:''}; renderApp();
 };
 window.selectP=function(field,name){ S.modal[field]=name===S.modal[field]?null:name; renderModal(document.getElementById('modal')); };
@@ -1615,6 +1664,7 @@ function renderModal(md){
   else if(m.type==='rosterEdit') buildRosterEditModal(box);
   else if(m.type==='qr')         buildQRModal(box);
   else if(m.type==='copyLineup') buildCopyLineupModal(box);
+  else if(m.type==='schedule')   buildScheduleModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
   md.appendChild(ov);
@@ -1709,12 +1759,22 @@ function buildSubModal(box){
 
 window.confirmSub=function(){
   const m=S.modal; if(!m.playerOff||!m.playerOn) return;
+  const hk=`h${S.liveHalf}`;
   dbPush(`${S.gameId}/events`,{
     type:'sub', minute:+m.minute||0, half:S.liveHalf,
     playerOff:m.playerOff, playerOn:m.playerOn,
     positionSlot:m.positionSlot||null,
     clockSecs:m.clockSecs||0, timestamp:Date.now()
   });
+  // Auto-cleanup: remove any sub targets pointing to playerOff (now on bench)
+  if(S.gameData.liveSubs?.[hk]){
+    Object.entries(S.gameData.liveSubs[hk]).forEach(([bp,entry])=>{
+      if(entry.subFor===m.playerOff){
+        delete S.gameData.liveSubs[hk][bp];
+        if(db) db.ref(`germany-u14/games/${S.gameId}/liveSubs/${hk}/${bp}`).remove();
+      }
+    });
+  }
   closeModal();
 };
 
@@ -2445,6 +2505,57 @@ function renderParentGame(a, gid, gd){
     if(clockState.running) window._pvClockTimer=setInterval(pvTick,1000);
   }
 }
+
+// ── Schedule modal ─────────────────────────────────────────────────────
+function buildScheduleModal(box){
+  const regular=GAMES.filter(g=>g.type==='regular');
+  const tourney=GAMES.filter(g=>g.type==='tournament');
+
+  function gameRow(g){
+    const hasData=!!(S.allGames[g.id]?.meta?.opponent||S.allGames[g.id]?.lineup||S.allGames[g.id]?.events);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border)">
+      <div style="flex:1;font-size:13px;font-weight:600">${g.label}</div>
+      ${hasData?`<span style="font-size:10px;color:var(--muted);background:var(--gl);padding:2px 7px;border-radius:10px">has data</span>`:''}
+      <button class="btn btn-s btn-sm" style="color:#b91c1c;border-color:#b91c1c;padding:3px 10px"
+        onclick="removeGame('${g.id}')" ${hasData?'title="Warning: has game data"':''}>×</button>
+    </div>`;
+  }
+
+  box.innerHTML=`<div class="mt">Edit Schedule<button class="mc" onclick="closeModal()">×</button></div>
+    <div class="modal-section">Regular Season — ${regular.length} games</div>
+    <div style="margin-bottom:8px">${regular.map(gameRow).join('')}</div>
+    <button class="btn btn-p btn-sm" style="width:100%;margin-bottom:16px" onclick="addGame('regular')">+ Add Regular Season Game</button>
+    <div class="modal-section">Tournament — ${tourney.length} games</div>
+    <div style="margin-bottom:8px">${tourney.map(gameRow).join('')}</div>
+    <button class="btn btn-p btn-sm" style="width:100%;margin-bottom:4px" onclick="addGame('tournament')">+ Add Tournament Game</button>`;
+}
+
+window.addGame=function(type){
+  const existing=GAMES.filter(g=>g.type===type);
+  const n=existing.length+1;
+  const prefix=type==='regular'?'g':'t';
+  // Find a unique ID
+  let id=`${prefix}${n}`;
+  let attempts=0;
+  while(GAMES.find(g=>g.id===id)&&attempts<20){ attempts++; id=`${prefix}${n+attempts}`; }
+  const label=type==='regular'?`Game ${GAMES.filter(g=>g.type==='regular').length+1}`:`Tournament · Game ${n}`;
+  GAMES=[...GAMES,{id,label,type}];
+  scheduleSet(GAMES);
+  renderModal(document.getElementById('modal'));
+};
+
+window.removeGame=function(id){
+  const g=GAMES.find(g=>g.id===id);
+  if(!g) return;
+  const hasData=!!(S.allGames[id]?.meta?.opponent||S.allGames[id]?.lineup||S.allGames[id]?.events);
+  const msg=hasData
+    ?`Remove "${g.label}"? It has game data that will no longer be accessible. This cannot be undone.`
+    :`Remove "${g.label}"?`;
+  if(!confirm(msg)) return;
+  GAMES=GAMES.filter(g=>g.id!==id);
+  scheduleSet(GAMES);
+  renderModal(document.getElementById('modal'));
+};
 
 initFB();
 
