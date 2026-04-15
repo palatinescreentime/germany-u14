@@ -494,7 +494,7 @@ const PLAYER_DATA = [
 let S = {
   view:'season', gameId:null, tab:'setup', lhalf:'h1', liveHalf:1,
   gameData:{}, allGames:{}, bagTags:{}, roster:null, teamName:'Germany U14',
-  btView:'award', btGame:'g1', selected:null, modal:null,
+  btView:'award', btGame:null, selected:null, modal:null,
   pvGameId:null, liveBenchSel:null, liveShowConfirm:false, liveFieldSel:null,
   clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
@@ -549,8 +549,21 @@ window.toggleClock=function(){
   saveClockState();
   tickClock();
 };
+window.stopClock=function(){
+  // Pause the clock immediately, then show a modal to pick what happens next
+  if(!S.clock.running) return;
+  const idx=S.liveHalf-1;
+  S.clock.elapsed[idx]+=Math.floor((Date.now()-S.clock.startedAt)/1000);
+  S.clock.startedAt=null; S.clock.running=false;
+  clearInterval(clockInterval); clockInterval=null;
+  saveClockState();
+  tickClock();
+  // Show stop modal
+  S.modal={type:'stopClock',half:S.liveHalf};
+  renderApp();
+};
+
 window.resetClock=function(){
-  if(!confirm('Reset clock for this half?')) return;
   const h=S.liveHalf-1;
   S.clock.elapsed[h]=0; S.clock.startedAt=null; S.clock.running=false;
   clearInterval(clockInterval); clockInterval=null;
@@ -565,19 +578,8 @@ window.adjustClock=function(){
     S.clock.startedAt=null; S.clock.running=false;
     clearInterval(clockInterval); clockInterval=null;
   }
-  const input=prompt(`Clock is at ${clockDisplay()}.\n\nEnter the ACTUAL minute the game is at (0–${HALF}):`, ''+clockMinute());
-  if(input===null){ if(was) window.toggleClock(); return; }
-  const parsed=parseInt(input,10);
-  if(isNaN(parsed)||parsed<0||parsed>HALF+10){ alert('Invalid minute.'); if(was) window.toggleClock(); return; }
-  const h=S.liveHalf-1;
-  S.clock.elapsed[h]=parsed*60;
-  S.clock.startedAt=null;
-  if(was){
-    S.clock.startedAt=Date.now(); S.clock.running=true;
-    clockInterval=setInterval(tickClock,1000);
-  }
-  saveClockState();
-  tickClock();
+  S.modal={type:'adjustClock', was, currentMin:clockMinute()};
+  renderApp();
 };
 function tickClock(){
   const disp=document.getElementById('clock-disp');
@@ -585,9 +587,13 @@ function tickClock(){
   const rem=clockRemaining();
   if(disp){
     disp.textContent=clockDisplay();
-    disp.style.color=rem<0?'#ffce00':'#fff'; // gold in overtime
+    disp.style.color=rem<0?'#ffce00':'#fff';
   }
-  if(btn){ btn.className='clock-btn '+(S.clock.running?'pause':'start'); btn.textContent=S.clock.running?'⏸':'▶'; }
+  if(btn){
+    btn.className='clock-btn '+(S.clock.running?'pause':'start');
+    btn.textContent=S.clock.running?'■':'▶';
+    btn.onclick=S.clock.running?window.stopClock:window.toggleClock;
+  }
 }
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
@@ -663,20 +669,24 @@ function teamNameSet(name){ if(db) db.ref('germany-u14/teamName').set(name); }
 function scheduleSet(games){ if(db) db.ref('germany-u14/schedule').set(games); }
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
+  // Clean up parent view timers when leaving
+  if(S.view==='parent'){
+    if(window._pvTimer){ clearInterval(window._pvTimer); window._pvTimer=null; }
+    if(window._pvClockTimer){ clearInterval(window._pvClockTimer); window._pvClockTimer=null; }
+  }
   S.view=view; S.gameId=gid||null; S.tab=tab||'setup';
   S.lhalf='h1'; S.liveHalf=1; S.modal=null; S.selected=null;
   if(gid){ listenGame(gid); S.gameData=S.allGames[gid]||{}; }
   render(); window.scrollTo(0,0);
 };
-window.goToBagTags = function(){ S.view='bagtags'; S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
+window.goToBagTags = function(){ S.view='bagtags'; S.btGame=S.btGame||GAMES[0]?.id||'g1'; S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
 window.goToRoster  = function(){ S.view='roster';  S.modal=null; S.selected=null; render(); window.scrollTo(0,0); };
 window.setBTView = function(v){ S.btView=v; renderApp(); };
 window.setBTGame = function(id){ S.btGame=id; renderApp(); };
-window.setTab = function(t){ S.tab=t; S.selected=null; render(); };
 window.setLH  = function(h){ S.lhalf=h; S.selected=null; renderApp(); };
 window.setTab=function(t){
   if(t==='live'){ S.liveBenchSel=null; S.liveShowConfirm=false; S.liveFieldSel=null; }
-  S.tab=t; renderApp();
+  S.tab=t; S.selected=null; renderApp();
 };
 window.setLiveHalf=function(h){
   if(S.clock.running){
@@ -715,6 +725,7 @@ function renderSeason(a) {
     <button class="hd-btn" onclick="goToRoster()" style="background:rgba(255,255,255,.15);margin-right:4px">👥 Roster</button>
     <button class="hd-btn" onclick="goToBagTags()" style="background:rgba(230,168,23,.3);margin-right:4px">🧱 Bag Tags</button>
     <button class="hd-btn" onclick="showModal('schedule')" style="background:rgba(255,255,255,.1);margin-right:4px">📅 Schedule</button>
+    <button class="hd-btn" onclick="showModal('qr')" style="background:rgba(204,0,0,.4);margin-right:4px">QR</button>
     ${(()=>{
       const anyDone=Object.values(S.allGames).some(g=>g?.meta?.status==='complete');
       return anyDone
@@ -752,7 +763,7 @@ function gameCard(g) {
 function renderGame(a) {
   const gdef=GAMES.find(g=>g.id===S.gameId)||{};
   const opp=S.gameData.meta?.opponent||gdef.label;
-  const hasScore=S.gameData.meta?.scoreUs!==undefined&&S.gameData.meta?.scoreUs!=='';
+  const hasScore=S.gameData.meta?.status==='complete';
   a.innerHTML=`
   <div class="hd no-print">
     <button class="back-btn" onclick="goTo('season')">‹</button>
@@ -1186,10 +1197,9 @@ function renderLive(c){
       <div class="clock-time" id="clock-disp">${clockDisplay()}</div>
       <div class="clock-sub">Half ${h} · ${HALF} min · counts down</div>
     </div>
-    <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="toggleClock()">${S.clock.running?'⏸':'▶'}</button>
+    <button id="clock-btn" class="clock-btn ${S.clock.running?'pause':'start'}" onclick="${S.clock.running?'stopClock()':'toggleClock()'}">${S.clock.running?'■':'▶'}</button>
     <button class="clock-btn reset" onclick="adjustClock()" title="Adjust clock to actual minute" style="font-size:13px;font-weight:700">±</button>
     <button class="clock-btn reset" onclick="resetClock()" title="Reset clock to 35:00">↺</button>
-    <button class="clock-btn reset" onclick="showModal('qr')" title="Parent view QR" style="font-size:14px">QR</button>
   </div>
   <div class="act-row">
     <button class="act act-sub" onclick="showModal('sub')">↕ Sub</button>
@@ -1478,9 +1488,10 @@ function renderFinalScoreCard(){
   const opp=m.opponent||'Opponent';
   const team=S.teamName||'Germany U14';
   const goalsScored=sortedEvents().filter(e=>e.type==='goal').length;
-  const hasScore=m.scoreUs!==undefined&&m.scoreUs!=='';
+  // Only show locked "Final Score" view when explicitly submitted (status=complete)
+  const isComplete=m.status==='complete';
 
-  if(hasScore){
+  if(isComplete){
     return `<div class="score-card">
       <div class="final-badge">Final Score</div>
       <div class="score-display">
@@ -1493,7 +1504,6 @@ function renderFinalScoreCard(){
     </div>`;
   }
 
-  // Live score card — shown during game before final is submitted
   const liveUs=m.scoreUs!==undefined&&m.scoreUs!==''?+m.scoreUs:goalsScored;
   const liveThem=m.scoreThem!==undefined&&m.scoreThem!==''?+m.scoreThem:0;
 
@@ -1593,14 +1603,27 @@ window.confirmFieldSwap=function(){
   if(!S.gameData.lineup) S.gameData.lineup={};
   if(!S.gameData.lineup[hk]) S.gameData.lineup[hk]={};
   const ln=S.gameData.lineup[hk];
-  if(fs.slot && fs.targetSlot){
-    ln[fs.slot]=fs.targetName;
-    ln[fs.targetSlot]=fs.name;
-  } else if(fs.slot){
-    ln[fs.slot]=fs.targetName;
-  } else if(fs.targetSlot){
-    ln[fs.targetSlot]=fs.name;
+
+  // Build the LIVE position map (accounts for any subs already made this half)
+  const {posMap,playerSlot}=buildCurrentPositions(ln,S.liveHalf);
+
+  // Find each player's actual current slot from the live map
+  const slotA=playerSlot[fs.name]||fs.slot;
+  const slotB=playerSlot[fs.targetName]||fs.targetSlot;
+
+  if(slotA&&slotB){
+    // Swap: write both players into each other's current live slots
+    ln[slotA]=fs.targetName;
+    ln[slotB]=fs.name;
+    // Also update any sub events that reference these slots so future subs resolve correctly
+    // (do this by pushing a positional note event for traceability — no extra action needed
+    //  since buildCurrentPositions will re-read the lineup)
+  } else if(slotA){
+    ln[slotA]=fs.targetName;
+  } else if(slotB){
+    ln[slotB]=fs.name;
   }
+
   dbSet(`${S.gameId}/lineup`,S.gameData.lineup);
   S.liveFieldSel=null;
   renderApp();
@@ -1665,6 +1688,8 @@ function renderModal(md){
   else if(m.type==='qr')         buildQRModal(box);
   else if(m.type==='copyLineup') buildCopyLineupModal(box);
   else if(m.type==='schedule')   buildScheduleModal(box);
+  else if(m.type==='stopClock')  buildStopClockModal(box);
+  else if(m.type==='adjustClock') buildAdjustClockModal(box);
   ov.appendChild(box);
   ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(); });
   md.appendChild(ov);
@@ -2143,6 +2168,28 @@ function renderGameTags(c){
     return `<tr><td class="gt-name">${p}</td>${cells}</tr>`;
   }).join('');
 
+  // Build award summary — one block per tag, only tags with at least one award this game
+  const summaryBlocks=TAGS.map(tag=>{
+    const winners=(gameTags[tag.id]||[]);
+    if(!winners.length) return '';
+    const pills=winners.map(p=>{
+      const prior=priorCount(p,tag.id);
+      const firstTime=prior===0;
+      return `<span style="display:inline-flex;align-items:center;gap:5px;background:${firstTime?'var(--germany-red)':'#555'};color:#fff;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:700;margin:3px">
+        ${p}${firstTime?'':` <span style="font-size:10px;opacity:.7">×${prior+1}</span>`}
+      </span>`;
+    }).join('');
+    return `<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:22px">${tag.icon}</span>
+        <span style="font-size:15px;font-weight:700;color:var(--text)">${tag.label}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">${winners.length} player${winners.length>1?'s':''}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">${pills}</div>
+      ${winners.some(p=>priorCount(p,tag.id)===0)?`<div style="font-size:10px;color:var(--muted);margin-top:8px">Red = first time receiving this award</div>`:''}
+    </div>`;
+  }).filter(Boolean).join('');
+
   c.innerHTML=`
   <div style="margin-bottom:10px;font-size:12px;color:var(--muted);line-height:1.7">
     <span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px">
@@ -2164,7 +2211,13 @@ function renderGameTags(c){
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-  </div>`;
+  </div>
+  ${summaryBlocks?`
+  <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border)">
+    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">🏆 Game Awards — Announcement View</div>
+    ${summaryBlocks}
+    ${!summaryBlocks?'<div style="color:var(--muted);font-size:13px;font-style:italic">No awards set yet for this game.</div>':''}
+  </div>`:'<div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border);color:var(--muted);font-size:13px;font-style:italic;text-align:center">No awards set yet — tap the circles above to award tags.</div>'}`;
 }
 
 window.toggleGameTag=function(gameId,tagId,player){
@@ -2269,6 +2322,73 @@ function renderBTGrid(c){
     Number = times awarded this season &nbsp;·&nbsp; — = not yet received
   </div>`;
 }
+
+function buildAdjustClockModal(box){
+  const m=S.modal;
+  box.innerHTML=`<div class="mt">Adjust Clock<button class="mc" onclick="cancelAdjustClock()">×</button></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Clock shows ${clockDisplay()}. Enter the actual game minute:</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <input class="fi" id="adj-min" type="number" min="0" max="${HALF+10}" value="${m.currentMin}"
+        style="width:90px;font-size:24px;font-weight:700;text-align:center;padding:10px"
+        oninput="S.modal.currentMin=+this.value">
+      <span style="font-size:14px;color:var(--muted)">minutes elapsed</span>
+    </div>
+    <button class="conf" onclick="confirmAdjustClock()">Set Clock</button>`;
+  // Auto-focus the input after render
+  setTimeout(()=>document.getElementById('adj-min')?.select(), 100);
+}
+window.confirmAdjustClock=function(){
+  const m=S.modal;
+  const parsed=parseInt(m.currentMin,10);
+  if(isNaN(parsed)||parsed<0||parsed>HALF+10){ return; }
+  const h=S.liveHalf-1;
+  S.clock.elapsed[h]=parsed*60;
+  S.clock.startedAt=null;
+  if(m.was){
+    S.clock.startedAt=Date.now(); S.clock.running=true;
+    clockInterval=setInterval(tickClock,1000);
+  }
+  saveClockState();
+  S.modal=null;
+  renderApp();
+};
+window.cancelAdjustClock=function(){
+  const m=S.modal;
+  if(m?.was) window.toggleClock(); // resume if was running
+  else { S.modal=null; renderApp(); }
+};
+function buildStopClockModal(box){
+  const h=S.modal.half;
+  if(h===1){
+    box.innerHTML=`<div class="mt">Clock Stopped — Half 1<button class="mc" onclick="closeModal()">×</button></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">What happened?</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="conf" style="background:#1a6b2f" onclick="endHalf1()">End of First Half — switch to H2</button>
+        <button class="conf" style="background:#555" onclick="closeModal()">Stoppage — resume later</button>
+      </div>`;
+  } else {
+    box.innerHTML=`<div class="mt">Clock Stopped — Half 2<button class="mc" onclick="closeModal()">×</button></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">What happened?</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="conf" style="background:#cc0000" onclick="endGame()">End of Game — submit final score</button>
+        <button class="conf" style="background:#555" onclick="closeModal()">Stoppage — resume later</button>
+      </div>`;
+  }
+}
+window.endHalf1=function(){
+  S.liveHalf=2;
+  S.liveBenchSel=null; S.liveShowConfirm=false; S.liveFieldSel=null;
+  closeModal();
+  renderApp();
+};
+window.endGame=function(){
+  closeModal();
+  renderApp();
+  setTimeout(()=>{
+    const sc=document.querySelector('.score-card');
+    if(sc) sc.scrollIntoView({behavior:'smooth',block:'center'});
+  },300);
+};
 
 // ── QR + Copy Lineup modals ────────────────────────────────────────────
 function buildQRModal(box){
