@@ -301,6 +301,11 @@ textarea.fi{min-height:78px;resize:vertical}
 .pos-table tr:hover td{background:#e0f0e6;cursor:pointer}
 .foot-badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;background:#e8f0fe;color:#1a56db}
 .foot-badge.both{background:#fef3c7;color:#92400e}
+.pen-dots{display:flex;gap:4px;align-items:center}
+.pen-dot{width:14px;height:14px;border-radius:50%;border:2px solid #ccc;background:#fff;cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s}
+.pen-dot.goal{background:#1a6b2f;border-color:#1a6b2f}
+.pen-dot.miss{background:#cc0000;border-color:#cc0000}
+.pen-dot:active{transform:scale(.85)}
 .gk-yes{color:var(--g);font-weight:700}
 .gk-open{color:#d97706;font-weight:700}
 .gk-no{color:#ccc}
@@ -496,6 +501,7 @@ let S = {
   gameData:{}, allGames:{}, bagTags:{}, roster:null, teamName:'Germany U14',
   btView:'award', btGame:null, selected:null, modal:null,
   pvGameId:null, liveBenchSel:null, liveShowConfirm:false, liveFieldSel:null,
+  penalties:{},
   clock:{ running:false, startedAt:null, elapsed:[0,0] }
 };
 
@@ -631,6 +637,10 @@ function initFB() {
       S.teamName = s.val() || 'Germany U14';
       render();
     });
+    db.ref('germany-u14/penalties').on('value', s => {
+      S.penalties = s.val() || {};
+      if(S.view==='roster') render();
+    });
     db.ref('germany-u14/schedule').on('value', s => {
       const val = s.val();
       if(val && Array.isArray(val) && val.length > 0){
@@ -667,6 +677,7 @@ function rosterRemove(id){ if(db) db.ref('germany-u14/roster/'+id).remove(); }
 function rosterPush(val){ if(db) db.ref('germany-u14/roster').push(val); }
 function teamNameSet(name){ if(db) db.ref('germany-u14/teamName').set(name); }
 function scheduleSet(games){ if(db) db.ref('germany-u14/schedule').set(games); }
+function penaltySet(playerId,dots){ if(db) db.ref('germany-u14/penalties/'+playerId).set(dots); }
 // ── Navigation ─────────────────────────────────────────────────────────
 window.goTo = function(view,gid,tab) {
   // Clean up parent view timers when leaving
@@ -1974,7 +1985,15 @@ function renderRoster(a){
     const footClass = p.foot==='Both'?'both':'';
     const gkClass = p.goalie==='Yes'?'gk-yes':p.goalie==='Open'?'gk-open':'gk-no';
     const gkLabel = p.goalie==='Yes'?'Yes ✓':p.goalie==='Open'?'Open':'No';
-    const idAttr = p.id?`data-id="${p.id}"`:'';
+    const pid=p.id||p.name;
+    const dots=(S.penalties[pid]||['','','','','']).slice(0,5);
+    // Pad to 5 if shorter
+    while(dots.length<5) dots.push('');
+    const dotHtml=dots.map((d,i)=>`<span class="pen-dot ${d}" data-pen-id="${pid}" data-pen-idx="${i}" onclick="event.stopPropagation();cyclePenaltyDot('${pid}',${i})" title="${d==='goal'?'Goal ✓':d==='miss'?'Miss ✗':'Not taken'}"></span>`).join('');
+    const goals=dots.filter(d=>d==='goal').length;
+    const taken=dots.filter(d=>d!=='').length;
+    const summary=taken>0?`<div data-pen-summary="${pid}" style="font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap">${goals}/${taken}</div>`:
+      `<div data-pen-summary="${pid}" style="font-size:9px;color:var(--muted);margin-top:2px;white-space:nowrap"></div>`;
     return `<tr onclick="openRosterEdit('${p.id||''}')" style="cursor:pointer">
       <td>
         <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id||''}')" title="Remove player">×</button>
@@ -1983,6 +2002,10 @@ function renderRoster(a){
       <td><span class="foot-badge ${footClass}">${p.foot||'R'}</span></td>
       <td><span class="pos-primary">${primary}</span>${rest?`<br><span class="pos-rest">${rest}</span>`:''}</td>
       <td class="${gkClass}">${gkLabel}</td>
+      <td onclick="event.stopPropagation()" style="min-width:90px">
+        <div class="pen-dots">${dotHtml}</div>
+        ${summary}
+      </td>
     </tr>`;
   }).join('');
 
@@ -2012,6 +2035,7 @@ function renderRoster(a){
           <th>Foot</th>
           <th>Position Preference <span style="font-weight:400;opacity:.7">(in order)</span></th>
           <th>Goalie?</th>
+          <th title="Penalty kick tracking — tap dots: green=goal, red=miss">⚽ PKs<br><span style="font-weight:400;font-size:9px;opacity:.7">tap to cycle</span></th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -2021,6 +2045,31 @@ function renderRoster(a){
     </div>
   </div>`;
 }
+
+window.cyclePenaltyDot=function(playerId, idx){
+  const cur=(S.penalties[playerId]||['','','','','']).slice(0,5);
+  while(cur.length<5) cur.push('');
+  const cycle={''  :'goal', 'goal':'miss', 'miss':''};
+  cur[idx]=cycle[cur[idx]]||'';
+  S.penalties[playerId]=cur;
+  penaltySet(playerId,cur);
+  // Re-render just the dots for this player without full re-render
+  const dots=document.querySelectorAll(`[data-pen-id="${playerId}"]`);
+  if(dots.length){
+    dots.forEach((dot,i)=>{
+      dot.className='pen-dot '+(cur[i]||'');
+      dot.title=cur[i]==='goal'?'Goal ✓':cur[i]==='miss'?'Miss ✗':'Not taken';
+    });
+    const summary=document.querySelector(`[data-pen-summary="${playerId}"]`);
+    if(summary){
+      const goals=cur.filter(d=>d==='goal').length;
+      const taken=cur.filter(d=>d!=='').length;
+      summary.textContent=taken>0?`${goals}/${taken}`:'';
+    }
+  } else {
+    if(S.view==='roster') render();
+  }
+};
 
 window.saveTeamName=function(){
   const name=(document.getElementById('inp-team-name')?.value||'').trim();
