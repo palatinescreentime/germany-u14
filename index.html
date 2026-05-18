@@ -228,7 +228,9 @@ textarea.fi{min-height:78px;resize:vertical}
 .live-pitch svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .lchip{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .lchip-tag{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px}
-.lchip-name{background:var(--germany-red);color:#fff;padding:5px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:52px;transition:transform .1s}
+.lchip-name{background:var(--germany-red);color:#fff;padding:5px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid transparent;text-align:center;min-width:52px;transition:background .4s,border-color .1s,transform .1s}
+.lchip-name.time-5{background:#1a6b2f}   /* 5+ min: green */
+.lchip-name.time-10{background:#c9a227;color:#1a1a1a} /* 10+ min: gold/amber */
 .lchip-name.unavail{background:#7f1d1d;border-color:#fca5a5}
 .lchip:active .lchip-name{transform:scale(1.08)}
 .lchip-name.sub-hint{border-color:#ffd700;animation:subpulse 1.2s infinite}
@@ -600,6 +602,16 @@ function tickClock(){
     btn.textContent=S.clock.running?'■':'▶';
     btn.onclick=S.clock.running?window.stopClock:window.toggleClock;
   }
+  // Update field player time-on-field colour indicators
+  const elapsed=clockElapsed(); // seconds elapsed in current half
+  document.querySelectorAll('.lchip-name[data-started]').forEach(chip=>{
+    const started=+chip.dataset.started||0;
+    const mins=Math.floor((elapsed-started)/60);
+    // Preserve other classes, only swap time classes
+    chip.classList.remove('time-5','time-10');
+    if(mins>=10)      chip.classList.add('time-10');
+    else if(mins>=5)  chip.classList.add('time-5');
+  });
 }
 const FB_OK = !Object.values(FB_CFG).includes("REPLACE_ME");
 
@@ -1278,6 +1290,17 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     }
   }
 
+  // Build map: playerName → elapsed seconds in this half when they came on
+  // Starters = 0, subbed-on players = their sub event minute * 60
+  const playerStartedAt={};
+  onField.forEach(p=>{ playerStartedAt[p]=0; }); // all starters begin at 0
+  sortedEvents()
+    .filter(e=>e.type==='sub'&&e.half===half)
+    .forEach(e=>{
+      if(e.playerOn) playerStartedAt[e.playerOn]=(e.minute||0)*60;
+      if(e.playerOff) delete playerStartedAt[e.playerOff];
+    });
+
   // Build planned targets set for gold outline on pitch
   const plannedTargets=new Set();
   benchPlayers.forEach(p=>{ const t=effectiveTarget(p); if(t) plannedTargets.add(t); });
@@ -1301,11 +1324,13 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     const isUnavail=avail[name]===false;
     const isPlanned=plannedTargets.has(name);
     const isFieldSel=S.liveFieldSel?.name===name;
+    const startedAt=playerStartedAt[name]??0;
     const wrap=document.createElement('div');
     wrap.className='lchip';
     wrap.style.cssText=`left:${pos.l}%;top:${pos.t}%`;
     wrap.innerHTML=`<div class="lchip-tag">${pos.tag}</div>
-      <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${name}${isUnavail?' ⚠':''}</div>`;
+      <div class="lchip-name ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}"
+        data-started="${startedAt}">${name}${isUnavail?' ⚠':''}</div>`;
     wrap.onclick=()=>{
       if(S.liveBenchSel){
         // Bench player selected — set this field player as their target
@@ -1344,10 +1369,12 @@ function renderLivePitch(container, ln, avail, onField, benchPlayers, half){
     const isUnavail=avail[p]===false;
     const isPlanned=plannedTargets.has(p);
     const isFieldSel=S.liveFieldSel?.name===p;
+    const startedAt=playerStartedAt[p]??0;
     const wrap=document.createElement('div');
     wrap.className='lchip'; wrap.style.cssText=`left:50%;top:20%`;
     wrap.innerHTML=`<div class="lchip-tag">?</div>
-      <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}">${p}</div>`;
+      <div class="lchip-name sub-hint ${isUnavail?'unavail':''} ${isPlanned&&!isFieldSel?'sub-pending':''} ${isFieldSel?'field-sel':''}"
+        data-started="${startedAt}">${p}</div>`;
     wrap.onclick=()=>{
       if(S.liveBenchSel){
         const existing=whoTargets(p);
