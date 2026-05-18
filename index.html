@@ -1955,15 +1955,34 @@ function computePT(gd){
   const pt={}; players().forEach(p=>pt[p]=0);
   const ln=gd.lineup||{};
   const events=Object.values(gd.events||{}).sort((a,b)=>a.minute-b.minute||(a.timestamp-b.timestamp));
+
   ['h1','h2'].forEach(hk=>{
-    const startMin=hk==='h1'?0:HALF, endMin=hk==='h1'?HALF:HALF*2;
     const hln=ln[hk]||{}, onF={};
-    getPos(hk).forEach(pos=>{ if(hln[pos.id]) onF[hln[pos.id]]=startMin; });
-    events.filter(e=>e.type==='sub'&&e.minute>=startMin&&e.minute<endMin).forEach(e=>{
-      if(e.playerOff&&onF[e.playerOff]!==undefined){pt[e.playerOff]+=(e.minute-onF[e.playerOff]); delete onF[e.playerOff];}
-      if(e.playerOn) onF[e.playerOn]=e.minute;
+    // All minutes are stored relative to the half (0–HALF)
+    // Start everyone who is in the lineup at minute 0 of this half
+    getPos(hk).forEach(pos=>{ if(hln[pos.id]) onF[hln[pos.id]]=0; });
+
+    // Filter sub events for this half by the 'half' field on the event
+    // (fall back to minute-range check for older events that may not have half stamped)
+    const halfNum=hk==='h1'?1:2;
+    const halfSubs=events.filter(e=>e.type==='sub'&&(
+      e.half===halfNum ||
+      (!e.half && (halfNum===1 ? e.minute<HALF : e.minute>=HALF))
+    ));
+
+    // Normalise minute: if event has no half field and minute looks absolute (>=HALF for H2), convert
+    halfSubs.forEach(e=>{
+      const rawMin=e.minute||0;
+      const min=(e.half? rawMin : (halfNum===2&&rawMin>=HALF ? rawMin-HALF : rawMin));
+      if(e.playerOff&&onF[e.playerOff]!==undefined){
+        pt[e.playerOff]+=(min-onF[e.playerOff]);
+        delete onF[e.playerOff];
+      }
+      if(e.playerOn) onF[e.playerOn]=min;
     });
-    Object.entries(onF).forEach(([p,t])=>{ pt[p]+=(endMin-t); });
+
+    // Credit remaining players to end of half
+    Object.entries(onF).forEach(([p,t])=>{ pt[p]+=(HALF-t); });
   });
   return pt;
 }
